@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".IntroActivity">
+
+    <LinearLayout
+        android:id="@+id/snackbar_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/shape_main_bg_gradient"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_warning"/>
+
+            <kr.co.tmonet.gdrive.view.NotoTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:text="@string/title_msg_warning_title"
+                android:textColor="@color/colorDodgerBlue"
+                android:textSize="36sp"
+                app:fontStyle="bold"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="36dp"
+                android:layout_marginTop="36dp"
+                android:background="@drawable/ic_blue_divider"/>
+
+            <kr.co.tmonet.gdrive.view.NotoTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/title_msg_warning_guide"
+                android:textColor="@color/colorGreyish"
+                android:textSize="20sp"
+                app:fontStyle="demilight"/>
+
+            <kr.co.tmonet.gdrive.view.NotoButton
+                android:id="@+id/submit_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:background="@drawable/ic_main_btn"
+                android:gravity="center"
+                android:paddingBottom="14dp"
+                android:text="@string/title_submit"
+                android:textColor="@color/colorSkyBlue"
+                android:textSize="20sp"
+                app:btnFontStyle="bold"/>
+
+        </LinearLayout>
+
+        <include
+            android:id="@+id/footer"
+            layout="@layout/view_footer"/>
+
+    </LinearLayout>
+</layout>

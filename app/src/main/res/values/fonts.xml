@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="noto_demilight">NotoSansKR-DemiLight-Hestia.otf</string>
+    <string name="noto_light">NotoSansKR-Light-Hestia.otf</string>
+    <string name="noto_regular">NotoSansKR-Regular-Hestia.otf</string>
+    <string name="noto_medium">NotoSansKR-Medium-Hestia.otf</string>
+    <string name="noto_bold">NotoSansKR-Bold-Hestia.otf</string>
+    <string name="noto_black">NotoSansKR-Black-Hestia.otf</string>
+</resources>
