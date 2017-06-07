@@ -9,7 +9,11 @@ import android.view.View;
 
 import com.skp.Tmap.TMapTapi;
 
+import java.util.ArrayList;
+
 import kr.co.tmonet.gdrive.R;
+import kr.co.tmonet.gdrive.controller.fragment.ChargeListDialogFragment;
+import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.manager.SettingManager;
 import kr.co.tmonet.gdrive.model.ChargeStation;
 import kr.co.tmonet.gdrive.utils.DialogUtils;
@@ -26,6 +30,9 @@ public class TMapBaseActivity extends BaseActivity {
     public static final int REQ_LOCATION_PERMISSION = 0;
     public static final String T_MAP_API_KEY = "70a342d1-f27b-3dcc-8b75-840f56e68e5d";
 
+    private ChargeListDialogFragment mChargeListDialogFragment;
+    public ArrayList<ChargeStation> mChargeStations = ModelManager.getInstance().getChargeStationList();
+
     public void checkPermissions(Context context, SettingManager.PermissionType type, CheckPermissionListener listener) {
         if (Build.VERSION.SDK_INT >= M) {
             String[] requiredPermissions = SettingManager.getInstance().getRequiredPermissions(context, type);
@@ -38,6 +45,13 @@ public class TMapBaseActivity extends BaseActivity {
         } else {
             listener.onReady();
         }
+    }
+
+    public void showChargeStationListDialog() {
+        if (mChargeListDialogFragment == null) {
+            mChargeListDialogFragment = ChargeListDialogFragment.newInstance(mChargeStations);
+        }
+        mChargeListDialogFragment.show(getSupportFragmentManager(), ChargeListDialogFragment.class.getSimpleName());
     }
 
     public void linkToTMap(ChargeStation station) {

@@ -3,6 +3,7 @@ package kr.co.tmonet.gdrive.controller.activity;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 
 import kr.co.tmonet.gdrive.R;
@@ -36,6 +37,10 @@ public class IntroActivity extends TMapBaseActivity {
         checkToCloseApp();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 
     private void loadChargeStationList() {
         ModelManager modelManager = ModelManager.getInstance();

@@ -166,11 +166,31 @@ public class ChargeStation implements Parcelable {
                     chargeItem.setLatitude(37.548793);
                     chargeItem.setLongitude(126.936991);
                     break;
+
+                case 7:
+                    chargeItem.setName("예일디자인고등학교");
+                    chargeItem.setAddress("서울특별시 은평구 구산동 8-3");
+                    chargeItem.setLatitude(37.609611);
+                    chargeItem.setLongitude(126.915808);
+                    break;
+                case 8:
+                    chargeItem.setName("철산초등학교");
+                    chargeItem.setAddress("경기도 광명시 철산3동 하안로 392");
+                    chargeItem.setLatitude(37.469097);
+                    chargeItem.setLongitude(126.874848);
+                    break;
+                case 9:
+                    chargeItem.setName("청라휴먼시아");
+                    chargeItem.setAddress("인천광역시 경서동 959-1");
+                    chargeItem.setLatitude(37.528539);
+                    chargeItem.setLongitude(126.646894);
+                    break;
+
                 default:
-                    chargeItem.setName("서울프랑스학교");
-                    chargeItem.setAddress("서울특별시 서초구 사평대로22길 91");
-                    chargeItem.setLatitude(37.495459);
-                    chargeItem.setLongitude(126.997624);
+                    chargeItem.setName("이화여자대학교");
+                    chargeItem.setAddress("서울특별시 서대문구 대현동 이화여대길 52");
+                    chargeItem.setLatitude(37.561860);
+                    chargeItem.setLongitude(126.946841);
                     break;
             }
 

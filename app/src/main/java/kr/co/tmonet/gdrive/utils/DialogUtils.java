@@ -26,7 +26,7 @@ public class DialogUtils {
     public static void showDialog(Context context, String msg, String btnText, boolean needCancelButton, final View.OnClickListener positionCallback) {
         final LovelyStandardDialog dialog = new LovelyStandardDialog(context)
                 .setTopColorRes(R.color.colorCharcoalGrey)
-                .setButtonsColorRes(R.color.colorSkyBlue)
+                .setButtonsColorRes(R.color.colorCharcoalGrey)
                 .setIcon(R.mipmap.ic_launcher)
                 .setTitle(msg);
 
@@ -48,31 +48,4 @@ public class DialogUtils {
         dialog.show();
     }
 
-//    public static void showDialog(Context context, String msg, String btnText, boolean needCancelButton, final View.OnClickListener positionCallback) {
-//        MaterialDialog.Builder builder = new MaterialDialog.Builder(context)
-//                .content(msg)
-//                .cancelable(false)
-//                .onNegative(new MaterialDialog.SingleButtonCallback() {
-//                    @Override
-//                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-//                        dialog.dismiss();
-//                    }
-//                });
-//
-//        if (needCancelButton) builder.negativeText(context.getString(R.string.title_cancel));
-//        if (btnText != null) {
-//            builder.positiveText(btnText);
-//        }
-//        if (positionCallback != null) {
-//            builder.onPositive(new MaterialDialog.SingleButtonCallback() {
-//                @Override
-//                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-//                    dialog.dismiss();
-//                    positionCallback.onClick(null);
-//                }
-//            });
-//        }
-//        builder.show();
-//    }
-//
 }

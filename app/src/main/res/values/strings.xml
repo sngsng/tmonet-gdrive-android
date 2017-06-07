@@ -25,6 +25,7 @@
     <string name="title_charge_status">충전 가능 여부</string>
     <string name="title_o">O</string>
     <string name="title_x">X</string>
+    <string name="title_search">검색</string>
 
 
     <string name="error_timeout">요청시간이 초과되었습니다.</string>

@@ -24,6 +24,8 @@
         </activity>
         <activity android:name=".controller.activity.MainActivity">
         </activity>
+        <activity android:name=".controller.activity.MapActivity">
+        </activity>
     </application>
 
 </manifest>

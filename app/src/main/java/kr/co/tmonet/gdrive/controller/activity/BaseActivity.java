@@ -1,7 +1,6 @@
 package kr.co.tmonet.gdrive.controller.activity;
 
 import android.app.Activity;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -14,8 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
-
-import com.google.android.gms.location.LocationRequest;
 
 import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.view.RotateProgressDialog;
@@ -31,9 +28,6 @@ public class BaseActivity extends AppCompatActivity {
     public static final int BACK_PRESS_TIME_DELAY = 2000;
     public static long sBackPressedTime;
 
-    private LocationRequest mLocationRequest;
-    private Location mCurrentLocation;
-
     public enum TransitionStyle {
         Modal,
         PushPop,
@@ -42,7 +36,6 @@ public class BaseActivity extends AppCompatActivity {
 
     private TransitionStyle mTransitionStyle = TransitionStyle.PushPop;
     private RotateProgressDialog mProgressDialog;
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -184,6 +177,4 @@ public class BaseActivity extends AppCompatActivity {
         }
         sBackPressedTime = System.currentTimeMillis();
     }
-
-
 }

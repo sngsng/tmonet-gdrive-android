@@ -14,7 +14,7 @@
             android:layout_width="384dp"
             android:layout_height="match_parent"
             android:layout_gravity="end"
-            android:background="@color/colorDarkGreyD9"
+            android:background="@color/colorDarkGrey85"
             android:orientation="vertical">
 
             <LinearLayout
