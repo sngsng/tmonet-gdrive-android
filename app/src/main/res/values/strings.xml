@@ -26,7 +26,11 @@
     <string name="title_o">O</string>
     <string name="title_x">X</string>
     <string name="title_search">검색</string>
-
+    <string name="title_lead_time">소요시간</string>
+    <string name="title_optimum_distance">최적거리</string>
+    <string name="title_expect_consume">예상소모율 - 예상소모량</string>
+    <string name="title_remain_battery">도착 후 배터리 잔량</string>
+    <string name="title_find_path">경로안내</string>
 
     <string name="error_timeout">요청시간이 초과되었습니다.</string>
     <string name="error_no_connection">인터넷 연결상태를 확인해주세요.</string>

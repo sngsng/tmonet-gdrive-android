@@ -7,7 +7,7 @@
     <color name="colorWhite">#ffffff</color>
     <color name="colorWhite20">#33ffffff</color>
     <color name="colorWhiteTwo">#e6e6e6</color>
-
+    <color name="colorWhite70">#b3ffffff</color>
 
     <color name="colorAlmostBlack">#0b0f12</color>
     <color name="colorCharcoalGrey">#303d47</color>
@@ -17,6 +17,8 @@
     <color name="colorGreyish">#afafaf</color>
     <color name="colorGreyishBrown">#5a5a5a</color>
     <color name="colorBlack40">#66202020</color>
+    <color name="colorBlack70">#b3202020</color>
+    <color name="colorBlueGrey">#10202b</color>
 
     <color name="colorDodgerBlue">#3eb0ff</color>
     <color name="colorSkyBlue">#4abfff</color>
