@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="NotoTextView">
+        <attr name="fontStyle" format="enum">
+            <enum name="demilight" value="0"/>
+            <enum name="light" value="1"/>
+            <enum name="regular" value="2"/>
+            <enum name="medium" value="3"/>
+            <enum name="bold" value="4"/>
+            <enum name="black" value="5"/>
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="NotoButton">
+        <attr name="btnFontStyle" format="enum">
+            <enum name="demilight" value="0"/>
+            <enum name="light" value="1"/>
+            <enum name="regular" value="2"/>
+            <enum name="medium" value="3"/>
+            <enum name="bold" value="4"/>
+            <enum name="black" value="5"/>
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="NotoEditText">
+        <attr name="edtFontStyle" format="enum">
+            <enum name="demilight" value="0"/>
+            <enum name="light" value="1"/>
+            <enum name="regular" value="2"/>
+            <enum name="medium" value="3"/>
+            <enum name="bold" value="4"/>
+            <enum name="black" value="5"/>
+        </attr>
+    </declare-styleable>
+</resources>
