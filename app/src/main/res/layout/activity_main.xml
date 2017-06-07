@@ -3,70 +3,71 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".IntroActivity">
+    tools:context=".controller.activity.MainActivity">
 
     <LinearLayout
         android:id="@+id/snackbar_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/shape_main_bg_gradient"
+        android:background="@drawable/ic_main_background"
         android:orientation="vertical">
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
+            android:padding="36dp">
 
             <ImageView
+                android:id="@+id/charge_station_image_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_warning"/>
+                android:layout_gravity="end"
+                android:src="@drawable/ic_charge_station"/>
 
-            <kr.co.tmonet.gdrive.view.NotoTextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="@string/title_msg_warning_title"
-                android:textColor="@color/colorDodgerBlue"
-                android:textSize="36sp"
-                app:fontStyle="bold"/>
+                android:orientation="vertical">
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="36dp"
-                android:layout_marginTop="36dp"
-                android:background="@drawable/ic_blue_divider"/>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_main_logo"/>
 
-            <kr.co.tmonet.gdrive.view.NotoTextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/title_msg_warning_guide"
-                android:textColor="@color/colorGreyish"
-                android:textSize="20sp"
-                app:fontStyle="demilight"/>
+                <LinearLayout
+                    android:id="@+id/map_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/ic_main_btn"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingBottom="14dp">
 
-            <kr.co.tmonet.gdrive.view.NotoButton
-                android:id="@+id/submit_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
-                android:background="@drawable/ic_main_btn"
-                android:gravity="center"
-                android:paddingBottom="14dp"
-                android:text="@string/title_submit"
-                android:textColor="@color/colorSkyBlue"
-                android:textSize="20sp"
-                app:btnFontStyle="bold"/>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_marginRight="6dp"
+                        android:src="@drawable/ic_main_map"/>
 
-        </LinearLayout>
+                    <kr.co.tmonet.gdrive.view.NotoTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_map"
+                        android:textColor="@color/colorSkyBlue"
+                        android:textSize="20sp"
+                        app:fontStyle="bold"/>
+
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
 
         <include
             android:id="@+id/footer"
             layout="@layout/view_footer"/>
+
     </LinearLayout>
 </layout>

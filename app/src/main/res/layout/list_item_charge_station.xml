@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <kr.co.tmonet.gdrive.view.NotoTextView
+                android:id="@+id/station_name_text_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="start|center_vertical"
+                android:textColor="@color/colorWhiteTwo"
+                android:textSize="18sp"
+                app:fontStyle="medium"
+                tools:text="충전소_01"/>
+
+            <kr.co.tmonet.gdrive.view.NotoTextView
+                android:id="@+id/station_distance_text_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/colorWhiteTwo"
+                android:textSize="18sp"
+                app:fontStyle="medium"
+                tools:text="12.8km"/>
+
+            <kr.co.tmonet.gdrive.view.NotoTextView
+                android:id="@+id/chargeable_text_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/colorWhiteTwo"
+                android:textSize="18sp"
+                app:fontStyle="medium"
+                tools:text="@string/title_o"/>
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/divider_view"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorGreyishBrown"/>
+    </LinearLayout>
+
+</layout>
