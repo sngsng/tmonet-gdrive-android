@@ -45,8 +45,3 @@ build/
 
 # Keystore files
 *.jks
-.gitignore
-build.gradle
-libs/
-proguard-rules.pro
-src/
