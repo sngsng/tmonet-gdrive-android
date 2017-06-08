@@ -120,6 +120,7 @@ public class ChargeStation implements Parcelable {
 
         for (int i = 0; i < 10; i++) {
             ChargeStation chargeItem = new ChargeStation();
+            chargeItem.setId(i);
             chargeItem.setDistance(i + "Km");
             chargeItem.setChargeable(i % 2 == 0);
 

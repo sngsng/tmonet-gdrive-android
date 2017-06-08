@@ -1,8 +1,7 @@
 <resources>
     <string name="app_name">GDrive</string>
-
-    <string name="google_geocoding_api_key">AIzaSyB77pPiHAIkA_W90t9Tdn8nOF2-ucfJYxU</string>
-    <string name="t_map_api_key">f85dc19f–8185–33a6–9158–94f9e41a337e</string>
+    <string name="google_geocoding_api_key">AIzaSyCWthEdssZK0duO4E1zp0-mSd0LfNNq3v0</string>
+    <string name="t_map_api_key">70a342d1-f27b-3dcc-8b75-840f56e68e5d</string>
 
     <string name="title_msg_none_service">현재 카쉐어링 서비스를 이용하고 있지 않습니다.</string>
     <string name="title_msg_warning_title">운전 중 시스템 조작은\n매우 위험합니다.</string>

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,12 +73,10 @@ public class ChargeStationAdapter extends RecyclerView.Adapter<ChargeStationAdap
             }
         }
 
-        Log.i(LOG_TAG, position + " / " + getItemCount());
         if (position == getItemCount() - 1) {
 
             holding.dividerView.setVisibility(View.GONE);
         }
-
     }
 
     @Override
