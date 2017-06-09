@@ -16,27 +16,23 @@ import com.skp.Tmap.TMapPoint;
 import com.skp.Tmap.TMapPolyLine;
 import com.skp.Tmap.TMapView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.Locale;
 
 import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.controller.fragment.ChargeListDialogFragment;
+import kr.co.tmonet.gdrive.controller.fragment.SearchAddressDialogFragment;
 import kr.co.tmonet.gdrive.databinding.ActivityMapBinding;
 import kr.co.tmonet.gdrive.manager.SettingManager;
 import kr.co.tmonet.gdrive.model.ChargeStation;
-import kr.co.tmonet.gdrive.network.APIConstants;
+import kr.co.tmonet.gdrive.model.SearchAddress;
 import kr.co.tmonet.gdrive.network.RequestHelper;
-import kr.co.tmonet.gdrive.network.RestClient;
-import kr.co.tmonet.gdrive.utils.ModelUtils;
 
-public class MapActivity extends TMapBaseActivity implements ChargeListDialogFragment.OnFragmentInteractionListener {
+public class MapActivity extends TMapBaseActivity implements ChargeListDialogFragment.OnFragmentInteractionListener, SearchAddressDialogFragment.OnFragmentInteractionListener {
 
     private static final String LOG_TAG = MapActivity.class.getSimpleName();
 
     private ActivityMapBinding mBinding;
+    private SearchAddressDialogFragment mSearchAddressDialogFragment;
     private View mDecorView;
     private int mUiOption;
 
@@ -75,6 +71,11 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     }
 
     @Override
+    public void onSelectAddress(SearchAddress address) {
+        fillData(address);
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         if (hasFocus) {
             mDecorView.setSystemUiVisibility(mUiOption);
@@ -109,7 +110,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
             @Override
             public void onCalloutMarker2ClickEvent(String s, TMapMarkerItem2 tMapMarkerItem2) {
                 Log.i(LOG_TAG, "Click marker? " + tMapMarkerItem2.getTMapPoint());
-                findPath(tMapMarkerItem2);
+//                findPath(tMapMarkerItem2);
             }
         });
     }
@@ -118,9 +119,13 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         mBinding.search.beforeSearchLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                showSearchAddressDialog();
-                mBinding.search.beforeSearchLayout.setVisibility(View.GONE);
-                mBinding.search.afterSearchLayout.setVisibility(View.VISIBLE);
+                showSearchAddressDialog();
+            }
+        });
+        mBinding.search.searchResultTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSearchAddressDialog();
             }
         });
         mBinding.search.searchClearImageView.setOnClickListener(new View.OnClickListener() {
@@ -128,6 +133,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
             public void onClick(View v) {
                 mBinding.search.beforeSearchLayout.setVisibility(View.VISIBLE);
                 mBinding.search.afterSearchLayout.setVisibility(View.GONE);
+                mBinding.search.searchResultTextView.setText("");
             }
         });
         mBinding.chargeStationImageView.setOnClickListener(new View.OnClickListener() {
@@ -142,6 +148,13 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
                 foundCurrentLocation();
             }
         });
+    }
+
+    private void showSearchAddressDialog() {
+        if (mSearchAddressDialogFragment == null) {
+            mSearchAddressDialogFragment = SearchAddressDialogFragment.newInstance();
+        }
+        mSearchAddressDialogFragment.show(getSupportFragmentManager(), ChargeListDialogFragment.class.getSimpleName());
     }
 
     private void setChargeStationMarkerPoint() {
@@ -159,10 +172,6 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
             mTMapView.addMarkerItem(station.getId().toString(), item);
             mMarkerIds.add(station.getId().toString());
         }
-    }
-
-    private void showSearchAddressDialog() {
-
     }
 
     private void foundCurrentLocation() {
@@ -197,40 +206,48 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         });
 
         RequestHelper requestHelper = new RequestHelper();
-        requestHelper.requestRouteTimeWithDistance(MapActivity.this, curPoint.getLatitude(), curPoint.getLongitude(), destLat, destLng, new RestClient.RestListener() {
-            @Override
-            public void onBefore() {
+//        requestHelper.requestRouteTimeWithDistance(MapActivity.this, curPoint.getLatitude(), curPoint.getLongitude(), destLat, destLng, new RestClient.RestListener() {
+//            @Override
+//            public void onBefore() {
+//
+//            }
+//
+//            @Override
+//            public void onSuccess(Object response) {
+//                if (response instanceof JSONObject) {
+//                    JSONObject properties = (JSONObject) response;
+//                    try {
+//                        String totalDistance = properties.getString(APIConstants.TMap.TOTAL_DISTANCE);
+//                        double totalDistanceDoubleInKm = Double.parseDouble(totalDistance) / 1000;
+//
+//                        String totalTime = properties.getString(APIConstants.TMap.TOTAL_TIME);
+//                        String totalTimeSimpleFormat = ModelUtils.getExpectedTimeStringFromSeconds(Integer.parseInt(totalTime));
+//                        String distanceInKm = String.format("%.2f", totalDistanceDoubleInKm);
+//                        showSnackbar(String.format(Locale.KOREA, "약 %1$s/ 약 %2$skm", totalTimeSimpleFormat, distanceInKm));
+//
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFail(Error error) {
+//
+//            }
+//
+//            @Override
+//            public void onError(Error error) {
+//
+//            }
+//        });
+    }
 
-            }
-
-            @Override
-            public void onSuccess(Object response) {
-                if (response instanceof JSONObject) {
-                    JSONObject properties = (JSONObject) response;
-                    try {
-                        String totalDistance = properties.getString(APIConstants.TMap.TOTAL_DISTANCE);
-                        double totalDistanceDoubleInKm = Double.parseDouble(totalDistance) / 1000;
-
-                        String totalTime = properties.getString(APIConstants.TMap.TOTAL_TIME);
-                        String totalTimeSimpleFormat = ModelUtils.getExpectedTimeStringFromSeconds(Integer.parseInt(totalTime));
-                        String distanceInKm = String.format("%.2f", totalDistanceDoubleInKm);
-                        showSnackbar(String.format(Locale.KOREA, "약 %1$s/ 약 %2$skm", totalTimeSimpleFormat, distanceInKm));
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onFail(Error error) {
-
-            }
-
-            @Override
-            public void onError(Error error) {
-
-            }
-        });
+    private void fillData(SearchAddress address) {
+        if (address != null) {
+            mBinding.search.afterSearchLayout.setVisibility(View.VISIBLE);
+            mBinding.search.beforeSearchLayout.setVisibility(View.GONE);
+            mBinding.search.searchResultTextView.setText(address.getRoadAddress());
+        }
     }
 }

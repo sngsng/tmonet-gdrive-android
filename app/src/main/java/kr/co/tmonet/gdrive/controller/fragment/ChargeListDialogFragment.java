@@ -66,7 +66,7 @@ public class ChargeListDialogFragment extends DialogFragment {
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-            dialog.getWindow().getAttributes().windowAnimations = R.style.ChargeDialogAnimation;
+            dialog.getWindow().getAttributes().windowAnimations = R.style.AppDialogAnimation;
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialog.setCanceledOnTouchOutside(true);
         }

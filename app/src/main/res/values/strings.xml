@@ -2,12 +2,14 @@
     <string name="app_name">GDrive</string>
     <string name="google_geocoding_api_key">AIzaSyCWthEdssZK0duO4E1zp0-mSd0LfNNq3v0</string>
     <string name="t_map_api_key">70a342d1-f27b-3dcc-8b75-840f56e68e5d</string>
+    <string name="juso_api_key">U01TX0FVVEgyMDE3MDYwODE0NTYxNzIxNzM4</string>
 
     <string name="title_msg_none_service">현재 카쉐어링 서비스를 이용하고 있지 않습니다.</string>
     <string name="title_msg_warning_title">운전 중 시스템 조작은\n매우 위험합니다.</string>
     <string name="title_msg_warning_guide">본 시스템의 안내 사항은\n실제 도로 상황과 다를 수 있습니다.</string>
     <string name="title_msg_turn_on_gps">기기의 GPS설정이 꺼져있습니다.\n설정화면으로 이동하시겠습니까?</string>
     <string name="title_msg_press_back_again_to_exit">한번 더 누르면 앱이 종료됩니다.</string>
+    <string name="title_msg_empty_result">검색 결과가 없습니다.</string>
 
     <string name="title_retry">다시시도</string>
     <string name="title_submit">확인</string>
@@ -25,6 +27,9 @@
     <string name="title_o">O</string>
     <string name="title_x">X</string>
     <string name="title_search">검색</string>
+    <string name="title_search_result">검색결과</string>
+    <string name="title_search_count_format">총 %1$s건</string>
+    <string name="title_search_hint">목적지를 입력하세요</string>
     <string name="title_lead_time">소요시간</string>
     <string name="title_optimum_distance">최적거리</string>
     <string name="title_expect_consume">예상소모율 - 예상소모량</string>

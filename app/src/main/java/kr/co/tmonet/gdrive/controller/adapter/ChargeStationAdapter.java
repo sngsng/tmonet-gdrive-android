@@ -40,8 +40,8 @@ public class ChargeStationAdapter extends RecyclerView.Adapter<ChargeStationAdap
 
     @Override
     public StationItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_charge_station, parent, false);
-        return new StationItemViewHolder(view);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_charge_station, parent, false);
+        return new StationItemViewHolder(itemView);
     }
 
     @Override

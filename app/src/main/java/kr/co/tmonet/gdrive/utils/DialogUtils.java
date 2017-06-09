@@ -14,6 +14,7 @@ import kr.co.tmonet.gdrive.R;
 public class DialogUtils {
 
     public static final int CHARGE_LIST_DIALOG_MARGIN = 36;
+    public static final int SEARCH_ADDRESS_DIALOG_MARGIN = 40;
 
     public static void showDialog(Context context, String msg, final View.OnClickListener actionCallback) {
         showDialog(context, msg, context.getString(R.string.title_retry), false, actionCallback);

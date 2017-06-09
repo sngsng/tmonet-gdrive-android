@@ -18,7 +18,7 @@
         <item name="android:windowExitAnimation">@anim/progress_exit</item>
     </style>
 
-    <style name="ChargeDialogAnimation">
+    <style name="AppDialogAnimation">
         <item name="android:windowEnterAnimation">@anim/modal_open</item>
         <item name="android:windowExitAnimation">@anim/modal_close</item>
     </style>

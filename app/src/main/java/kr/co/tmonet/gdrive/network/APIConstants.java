@@ -36,6 +36,30 @@ public class APIConstants {
         public static final String TOTAL_DISTANCE = "totalDistance";
         public static final String TOTAL_TIME = "totalTime";
 
+    }
 
+    public static class AddressSearch {
+        public static final String URL = "http://www.juso.go.kr/addrlink/addrLinkApiJsonp.do";
+        public static final String CONFM_KEY = "confmKey";
+        public static final String KEY_WORD = "keyword";
+        public static final String CURRENT_PAGE = "currentPage";
+        public static final String COUNT_PER_PAGE = "countPerPage";
+        public static final String RESULT_TYPE = "resultType";
+        public static final String RESULT_TYPE_JSON = "json";
+
+        public static final String RESULTS = "results";
+        public static final String COMMON = "common";
+        public static final String ERROR_CODE = "errorCode";
+        public static final String ERROR_MESSAGE = "errorMessage";
+        public static final String JUSO = "juso";
+        public static final String TOTAL_COUNT = "totalCount";
+        public static final String ROAD_ADDR = "roadAddr";
+        public static final String ROAD_ADDR_PART1 = "roadAddrPart1";
+        public static final String ROAD_ADDR_PART2 = "roadAddrPart2";
+        public static final String JIBUN_ADDR = "jibunAddr";
+        public static final String ZIP_NO = "zipNo";
+        public static final String SI_NM = "siNm";
+        public static final String SGG_NM = "ssgNm";
+        public static final String EMD_NM = "emdNm";
     }
 }
