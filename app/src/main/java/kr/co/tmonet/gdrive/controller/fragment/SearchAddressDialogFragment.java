@@ -85,7 +85,6 @@ public class SearchAddressDialogFragment extends DialogFragment {
         if (dialog != null) {
             dialog.getWindow().setGravity(Gravity.TOP | Gravity.START);
             WindowManager.LayoutParams layoutParams = dialog.getWindow().getAttributes();
-//            layoutParams.x = DialogUtils.SEARCH_ADDRESS_DIALOG_MARGIN;
             dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
             dialog.getWindow().setAttributes(layoutParams);
         }

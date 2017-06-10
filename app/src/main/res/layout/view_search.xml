@@ -123,6 +123,7 @@
                             android:textSize="16sp"/>
 
                         <kr.co.tmonet.gdrive.view.NotoTextView
+                            android:id="@+id/lead_time_text_view"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/colorWhite"
@@ -153,6 +154,7 @@
                             android:textSize="16sp"/>
 
                         <kr.co.tmonet.gdrive.view.NotoTextView
+                            android:id="@+id/distance_text_view"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/colorWhite"
@@ -192,6 +194,7 @@
                             android:textSize="16sp"/>
 
                         <kr.co.tmonet.gdrive.view.NotoTextView
+                            android:id="@+id/consume_text_view"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/colorWhite"
@@ -222,6 +225,7 @@
                             android:textSize="16sp"/>
 
                         <kr.co.tmonet.gdrive.view.NotoTextView
+                            android:id="@+id/battery_text_view"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/colorWhite"

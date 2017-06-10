@@ -53,14 +53,17 @@ public class RestClient {
 
         // TODO setUrl
         String url = subUrl;
-        jsonRequest(method, url, params, listener);
+        jsonRequest(method, url, params, null, listener);
     }
 
-    public void requestForGenericAPI(Method method, String url, @Nullable JSONObject params, final RestListener listener) {
-        jsonRequest(method, url, params, listener);
+    public void requestForTMapAPI(Method method, String url, @Nullable JSONObject params, final RestListener listener) {
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put(APIConstants.TMap.APP_KEY, mContext.getString(R.string.t_map_api_key));
+        headers.put(APIConstants.TMap.ACCEPT, APIConstants.TMap.APPLICATION_JSON);
+        jsonRequest(method, url, params, headers, listener);
     }
 
-    public void strRequestGet(String url, final RestListener listener) {
+    public void requestForSearchAddress(String url, final RestListener listener) {
         listener.onBefore();
 
         StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
@@ -89,7 +92,7 @@ public class RestClient {
 
     }
 
-    private void jsonRequest(Method method, String url, @Nullable JSONObject params, final RestListener listener) {
+    private void jsonRequest(Method method, String url, @Nullable JSONObject params, final HashMap<String, String> headers, final RestListener listener) {
         listener.onBefore();
 
         int volleyMethod = Request.Method.GET;
@@ -133,11 +136,11 @@ public class RestClient {
         }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<>();
-//                Log.d(LOG_TAG, "getHeaders: ");
-//                headers.put("appKey", mContext.getString(R.string.t_map_api_key));
-//                headers.put("Accept", "application/json");
-                return headers;
+                if (headers != null) {
+                    return headers;
+                } else {
+                    return super.getHeaders();
+                }
             }
         };
 

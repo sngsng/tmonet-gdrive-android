@@ -10,6 +10,7 @@
     <string name="title_msg_turn_on_gps">기기의 GPS설정이 꺼져있습니다.\n설정화면으로 이동하시겠습니까?</string>
     <string name="title_msg_press_back_again_to_exit">한번 더 누르면 앱이 종료됩니다.</string>
     <string name="title_msg_empty_result">검색 결과가 없습니다.</string>
+    <string name="title_msg_ask_add_way_point">배터리가 부족하여 목적지까지 도착하지 못할 수 있습니다.\n충전소를 경유지로 추가하시겠습니까?</string>
 
     <string name="title_retry">다시시도</string>
     <string name="title_submit">확인</string>
@@ -31,10 +32,17 @@
     <string name="title_search_count_format">총 %1$s건</string>
     <string name="title_search_hint">목적지를 입력하세요</string>
     <string name="title_lead_time">소요시간</string>
+    <string name="title_lead_time_format">약 %1$s</string>
     <string name="title_optimum_distance">최적거리</string>
+    <string name="title_optimum_distance_format">약 %1$skm</string>
     <string name="title_expect_consume">예상소모율 - 예상소모량</string>
+    <string name="title_expect_consume_format">약 %1$s%% - %2$skW</string>
     <string name="title_remain_battery">도착 후 배터리 잔량</string>
+    <string name="title_remain_battery_format">%1$s%%</string>
     <string name="title_find_path">경로안내</string>
+
+    <string name="title_minute">분</string>
+    <string name="title_hour">시간</string>
 
     <string name="error_timeout">요청시간이 초과되었습니다.</string>
     <string name="error_no_connection">인터넷 연결상태를 확인해주세요.</string>

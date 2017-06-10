@@ -13,7 +13,7 @@ import kr.co.tmonet.gdrive.model.ChargeStation;
 public class MainActivity extends TMapBaseActivity implements ChargeListDialogFragment.OnFragmentInteractionListener {
 
     private ActivityMainBinding mBinding;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,7 +29,7 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
     }
 
     @Override
-    public void onStationItemClick(int position) {
+    public void onStationItemClick(int position, boolean isWayPoint) {
         final ChargeStation station = mChargeStations.get(position);
 
         checkEnableUseLocation(MainActivity.this, new CheckPermissionListener() {
@@ -49,7 +49,7 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
         mBinding.chargeStationImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showChargeStationListDialog();
+                showChargeStationListDialog(false);
             }
         });
         mBinding.mapLayout.setOnClickListener(new View.OnClickListener() {

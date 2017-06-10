@@ -32,21 +32,22 @@ import kr.co.tmonet.gdrive.databinding.FragmentChargeListDialogBinding;
 public class ChargeListDialogFragment extends DialogFragment {
 
     private static final String ARG_CHARGE_STATION_ITEMS = "argChargeStationItems";
+    private static final String ARG_SET_AS_WAY_POINT = "argSetAsWayPoint";
 
     private ArrayList<ChargeStation> mChargeStations = new ArrayList<>();
     private FragmentChargeListDialogBinding mBinding;
     private ChargeStationAdapter mChargeStationAdapter;
     private OnFragmentInteractionListener mListener;
-
+    private boolean mIsWayPoint = false;
 
     public ChargeListDialogFragment() {
     }
 
-    public static ChargeListDialogFragment newInstance(ArrayList<ChargeStation> chargeStations) {
+    public static ChargeListDialogFragment newInstance(ArrayList<ChargeStation> chargeStations, boolean isWayPoint) {
         ChargeListDialogFragment fragment = new ChargeListDialogFragment();
         Bundle args = new Bundle();
         args.putParcelableArrayList(ARG_CHARGE_STATION_ITEMS, chargeStations);
-
+        args.putBoolean(ARG_SET_AS_WAY_POINT, isWayPoint);
         fragment.setArguments(args);
         return fragment;
     }
@@ -56,6 +57,7 @@ public class ChargeListDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mChargeStations = getArguments().getParcelableArrayList(ARG_CHARGE_STATION_ITEMS);
+            mIsWayPoint = getArguments().getBoolean(ARG_SET_AS_WAY_POINT);
         }
     }
 
@@ -129,7 +131,7 @@ public class ChargeListDialogFragment extends DialogFragment {
             @Override
             public void onStationItemClick(int position) {
                 if (mListener != null) {
-                    mListener.onStationItemClick(position);
+                    mListener.onStationItemClick(position, mIsWayPoint);
                 }
             }
         });
@@ -142,6 +144,6 @@ public class ChargeListDialogFragment extends DialogFragment {
     }
 
     public interface OnFragmentInteractionListener {
-        void onStationItemClick(int position);
+        void onStationItemClick(int position, boolean isWayPoint);
     }
 }

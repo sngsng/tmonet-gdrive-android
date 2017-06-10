@@ -21,10 +21,14 @@ public class APIConstants {
     }
 
     public static class TMap {
-        public static final String API_ROOT_AUTHORITY = "apis.skplanetx.com";
+        public static final String APP_KEY = "appKey";
+        public static final String ACCEPT = "Accept";
+        public static final String APPLICATION_JSON = "application/json";
+        public static final String URL = "https://apis.skplanetx.com/tmap/routes?";
         public static final String TMAP = "tmap";
         public static final String ROUTES = "routes";
         public static final String VERSION = "version";
+        public static final String VERSION_VALUE_1 = "1";
         public static final String START_Y = "startY";
         public static final String START_X = "startX";
         public static final String END_Y = "endY";
@@ -35,6 +39,13 @@ public class APIConstants {
         public static final String PROPERTIES = "properties";
         public static final String TOTAL_DISTANCE = "totalDistance";
         public static final String TOTAL_TIME = "totalTime";
+
+        public static final String R_GO_NAME = "rGoName";
+        public static final String R_GO_X = "rGoX";
+        public static final String R_GO_Y = "rGoY";
+        public static final String R_V1_NAME = "rV1Name";
+        public static final String R_V1_X = "rV1X";
+        public static final String R_V1_Y = "rV1Y";
 
     }
 
@@ -61,5 +72,6 @@ public class APIConstants {
         public static final String SI_NM = "siNm";
         public static final String SGG_NM = "ssgNm";
         public static final String EMD_NM = "emdNm";
+        public static final String BD_NM = "bdNm";
     }
 }

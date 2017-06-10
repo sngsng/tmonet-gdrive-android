@@ -30,13 +30,17 @@ public class ModelUtils {
         return builder.build().toString();
     }
 
-    public static String getExpectedTimeStringFromSeconds(int seconds) {
+    public static String getExpectedDistanceInKmFromMeter(String totalDistance) {
+        double totalDistanceDoubleInKm = Double.parseDouble(totalDistance) / 1000;
 
+        return String.format("%.2f", totalDistanceDoubleInKm);
+    }
+
+    public static String getExpectedTimeStringFromSeconds(String totalTime) {
+        int seconds = Integer.parseInt(totalTime);
         int totalExpectedMinute = seconds / 60;
-
         if (totalExpectedMinute < 60) {
             return totalExpectedMinute + "분";
-
         } else {
             int hour = totalExpectedMinute / 60;
             int min = totalExpectedMinute % 60;

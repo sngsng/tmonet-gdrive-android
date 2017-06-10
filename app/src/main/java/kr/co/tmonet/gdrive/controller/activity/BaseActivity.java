@@ -154,6 +154,7 @@ public class BaseActivity extends AppCompatActivity {
     public void showProgressDialog() {
         if (mProgressDialog == null) {
             mProgressDialog = new RotateProgressDialog(this);
+            mProgressDialog.setCancelable(false);
             if (mProgressDialog.getWindow() != null && mProgressDialog.getWindow().getAttributes() != null) {
                 mProgressDialog.getWindow().getAttributes().windowAnimations = R.style.AppProgressDialogAnimation;
             }

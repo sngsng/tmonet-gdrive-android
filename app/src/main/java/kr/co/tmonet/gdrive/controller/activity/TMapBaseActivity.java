@@ -21,12 +21,15 @@ import com.google.android.gms.location.LocationServices;
 import com.skp.Tmap.TMapTapi;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.controller.fragment.ChargeListDialogFragment;
 import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.manager.SettingManager;
 import kr.co.tmonet.gdrive.model.ChargeStation;
+import kr.co.tmonet.gdrive.model.SearchAddress;
+import kr.co.tmonet.gdrive.network.APIConstants;
 import kr.co.tmonet.gdrive.utils.DialogUtils;
 
 import static android.os.Build.VERSION_CODES.M;
@@ -104,20 +107,27 @@ public class TMapBaseActivity extends BaseActivity {
         }
     }
 
-    public void showChargeStationListDialog() {
+    public void showChargeStationListDialog(boolean isWayPoint) {
         if (mChargeListDialogFragment == null) {
-            mChargeListDialogFragment = ChargeListDialogFragment.newInstance(mChargeStations);
+            if (isWayPoint) {
+                mChargeListDialogFragment = ChargeListDialogFragment.newInstance(mChargeStations, true);
+            } else {
+                mChargeListDialogFragment = ChargeListDialogFragment.newInstance(mChargeStations, false);
+            }
         }
         mChargeListDialogFragment.show(getSupportFragmentManager(), ChargeListDialogFragment.class.getSimpleName());
     }
 
-    public void linkToTMap(ChargeStation station) {
+    public void linkToTMap(Object object) {
         TMapTapi tMapTapi = new TMapTapi(this);
         tMapTapi.setSKPMapAuthentication(getString(R.string.t_map_api_key));
 
-        if (!tMapTapi.invokeRoute(station.getName(), (float) station.getLongitude(), (float) station.getLatitude())) {
-            showSnackbar(getString(R.string.error_no_cannot_found_t_map));
-            Log.i(LOG_TAG, "can not found t map");
+        if (object instanceof ChargeStation) {
+            ChargeStation station = (ChargeStation) object;
+            checkHasTMap(tMapTapi, station.getName(), station.getLongitude(), station.getLatitude());
+        } else if (object instanceof SearchAddress) {
+            SearchAddress address = (SearchAddress) object;
+            checkHasTMap(tMapTapi, address.getName(), address.getLongitude(), address.getLatitude());
         }
     }
 
@@ -141,6 +151,23 @@ public class TMapBaseActivity extends BaseActivity {
         }
     }
 
+    private void checkHasTMap(TMapTapi tMapTapi, String name, double lng, double lat) {
+
+        HashMap<String, String> pathInfo = new HashMap<>();
+        pathInfo.put(APIConstants.TMap.R_GO_NAME, name);
+        pathInfo.put(APIConstants.TMap.R_GO_Y, String.valueOf(lat));
+        pathInfo.put(APIConstants.TMap.R_GO_X, String.valueOf(lng));
+
+        // Test for set WayPoint:
+//        pathInfo.put(APIConstants.TMap.R_V1_NAME, "신도림");
+//        pathInfo.put(APIConstants.TMap.R_V1_Y, "37.50861147");
+//        pathInfo.put(APIConstants.TMap.R_V1_X, "126.8911457");
+
+        if (!tMapTapi.invokeRoute(pathInfo)) {
+            showSnackbar(getString(R.string.error_no_cannot_found_t_map));
+            Log.i(LOG_TAG, "can not found t map");
+        }
+    }
 
     private void startLocationUpdates() {
         // M이상 런타임 퍼미션 체크
