@@ -119,15 +119,27 @@
 
                 <LinearLayout
                     android:id="@+id/empty_layout"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="110dp"
+                    android:gravity="center"
+                    android:orientation="vertical"
                     android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_empty_result"/>
 
                     <kr.co.tmonet.gdrive.view.NotoTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="22dp"
+                        android:gravity="center"
                         android:text="@string/title_msg_empty_result"
-                        android:textColor="@color/colorWhite"/>
+                        android:textColor="@color/colorWhite"
+                        android:textSize="18sp"
+                        app:fontStyle="demilight"/>
                 </LinearLayout>
             </FrameLayout>
         </LinearLayout>
