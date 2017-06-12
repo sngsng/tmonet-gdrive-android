@@ -46,6 +46,8 @@ public class TMapBaseActivity extends BaseActivity {
     private ChargeListDialogFragment mChargeListDialogFragment;
     public ArrayList<ChargeStation> mChargeStations = ModelManager.getInstance().getChargeStationList();
 
+    public LocationChangedListener mLocationChangedListener;
+
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
@@ -85,12 +87,20 @@ public class TMapBaseActivity extends BaseActivity {
         }
     }
 
+    public void setLocationChangedListener(LocationChangedListener locationChangedListener) {
+        mLocationChangedListener = locationChangedListener;
+    }
+
     protected void updateLocation(Location location) {
         mCurrentLocation = location;
         SettingManager settingManager = SettingManager.getInstance();
         settingManager.setCurrentLatitude(location.getLatitude());
         settingManager.setCurrentLongitude(location.getLongitude());
         Log.i(LOG_TAG, "updateLocation: curLat: " + location.getLatitude() + " / curLng: " + location.getLongitude());
+
+        if(mLocationChangedListener!= null) {
+            mLocationChangedListener.onLocationChanged();
+        }
     }
 
     public void checkPermissions(Context context, SettingManager.PermissionType type, CheckPermissionListener listener) {
@@ -254,6 +264,10 @@ public class TMapBaseActivity extends BaseActivity {
 
     public interface CheckPermissionListener {
         void onReady();
+    }
+
+    public interface LocationChangedListener {
+        void onLocationChanged();
     }
 
 

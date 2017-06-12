@@ -50,6 +50,7 @@ public class MapActivityHelper extends ViewHelper implements View.OnClickListene
     }
 
     public void addTMapView(TMapView tMapView) {
+
         mBinding.mapLayout.addView(tMapView);
     }
 

@@ -10,7 +10,9 @@ import android.util.Log;
 import android.view.View;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.skp.Tmap.TMapCircle;
 import com.skp.Tmap.TMapData;
+import com.skp.Tmap.TMapGpsManager;
 import com.skp.Tmap.TMapMarkerItem;
 import com.skp.Tmap.TMapPoint;
 import com.skp.Tmap.TMapPolyLine;
@@ -48,6 +50,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     private ArrayList<String> mMarkerIds = new ArrayList<>();
     private SearchAddress mSearchAddress = new SearchAddress();
     private TMapView mTMapView;
+    private TMapGpsManager mTMapGpsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +67,6 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         Log.i(LOG_TAG, "onSaveInstanceState : searchAddress");
 
         // TODO SAVE mSearchAddress, mTMapView
-
-
     }
 
     @Override
@@ -104,11 +105,34 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
 
     @Override
     protected void updateLocation(Location location) {
+        setLocationChangedListener(new LocationChangedListener() {
+            @Override
+            public void onLocationChanged() {
+                if (mTMapView != null) {
+                    Log.i(LOG_TAG, "LOCATION CHANGED !!");
+                    mTMapView.setLocationPoint(SettingManager.getInstance().getCurrentLongitude(), SettingManager.getInstance().getCurrentLatitude());
+                    mTMapView.setCenterPoint(mTMapView.getLocationPoint().getLongitude(), mTMapView.getLocationPoint().getLatitude());
+                }
+            }
+        });
         super.updateLocation(location);
+    }
+
+    private void setScreenSizeFull() {
+        mDecorView = getWindow().getDecorView();
+        mUiOption = getWindow().getDecorView().getSystemUiVisibility();
+        mUiOption |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+            mUiOption |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+            mUiOption |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+        mDecorView.setSystemUiVisibility(mUiOption);
     }
 
     private void setUpViews() {
         mActivityHelper = new MapActivityHelper(this, mBinding);
+
         initializeTMap();
 
         mActivityHelper.setEventCallback(new MapActivityHelper.EventCallback() {
@@ -159,26 +183,76 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         mTMapView.setLocationPoint(curLng, curLat);
         mTMapView.setLanguage(TMapView.LANGUAGE_KOREAN);
         mTMapView.setIconVisibility(true);
-        mTMapView.setZoomLevel(13);
+        mTMapView.setZoomLevel(15);
         mTMapView.setMapType(TMapView.MAPTYPE_STANDARD);
         mTMapView.setCompassMode(false);
         mTMapView.setTrackingMode(true);
+
+//        mTMapGpsManager = new TMapGpsManager(MapActivity.this);
+//        mTMapGpsManager.setMinTime(1000);
+//        mTMapGpsManager.setMinDistance(5);
+//        mTMapGpsManager.setProvider(mTMapGpsManager.GPS_PROVIDER);
+//        mTMapGpsManager.OpenGps();
+
+        setRadiusCircle();
 
         mActivityHelper.addTMapView(mTMapView);
 
         setChargeStationMarkerPoint();
     }
 
-    private void setScreenSizeFull() {
-        mDecorView = getWindow().getDecorView();
-        mUiOption = getWindow().getDecorView().getSystemUiVisibility();
-        mUiOption |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-            mUiOption |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-            mUiOption |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    private void setRadiusCircle() {
+        TMapCircle circleS = new TMapCircle();
+        TMapCircle circleM = new TMapCircle();
+        TMapCircle circleL = new TMapCircle();
 
-        mDecorView.setSystemUiVisibility(mUiOption);
+        circleS.setCenterPoint(mTMapView.getLocationPoint());
+        circleS.setAreaColor(0x00ff23);
+        circleS.setAreaAlpha(38);
+        circleS.setLineColor(0x00ff23);
+        circleS.setRadius(1000.0);   // 미터
+        circleS.setRadiusVisible(true);
+
+        circleM.setCenterPoint(mTMapView.getLocationPoint());
+        circleM.setAreaColor(0xffff00);
+        circleM.setAreaAlpha(38);
+        circleM.setLineColor(0xffff00);
+        circleM.setRadius(2000.0);   // 미터
+        circleM.setRadiusVisible(true);
+
+        circleL.setCenterPoint(mTMapView.getLocationPoint());
+        circleL.setAreaColor(0xff0000);
+        circleL.setAreaAlpha(38);
+        circleL.setLineColor(0xff0000);
+        circleL.setRadius(3000.0);   // 미터
+        circleL.setRadiusVisible(true);
+
+        mTMapView.addTMapCircle("cId1", circleS);
+        mTMapView.addTMapCircle("cId2", circleM);
+        mTMapView.addTMapCircle("cId3", circleL);
+
+    }
+
+    private void setChargeStationMarkerPoint() {
+
+        for (ChargeStation station : mChargeStations) {
+            TMapPoint point = new TMapPoint(station.getLatitude(), station.getLongitude());
+            TMapMarkerItem item = new TMapMarkerItem();
+
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_charge_station_marker);
+
+            item.setTMapPoint(point);
+            item.setIcon(bitmap);
+            item.setName(station.getName());
+            item.setPosition((float) 0.5, (float) 1.0);
+            item.setVisible(TMapMarkerItem.VISIBLE);
+            item.setEnableClustering(true);
+
+            mTMapView.addMarkerItem(station.getId().toString(), item);
+            mTMapView.setEnableClustering(true);
+            mMarkerIds.add(station.getId().toString());
+
+        }
     }
 
     private void showSearchAddressDialog() {
@@ -195,25 +269,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         mTMapView.removeTMapPath();
     }
 
-    private void setChargeStationMarkerPoint() {
-
-        for (ChargeStation station : mChargeStations) {
-            TMapPoint point = new TMapPoint(station.getLatitude(), station.getLongitude());
-            TMapMarkerItem item = new TMapMarkerItem();
-
-            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_charge_station_marker);
-
-            item.setTMapPoint(point);
-            item.setIcon(bitmap);
-            item.setName(station.getName());
-            item.setVisible(TMapMarkerItem.VISIBLE);
-            mTMapView.addMarkerItem(station.getId().toString(), item);
-            mMarkerIds.add(station.getId().toString());
-        }
-    }
-
     private void foundCurrentLocation() {
-        mTMapView.setZoomLevel(13);
         mTMapView.setCenterPoint(SettingManager.getInstance().getCurrentLongitude(), SettingManager.getInstance().getCurrentLatitude(), true);
     }
 
@@ -247,62 +303,6 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
                 showSnackbar(error.getLocalizedMessage());
             }
         });
-    }
-
-    /**
-     * if it has waypoint,
-     *
-     * @param passLat,passLng absolutely necessary.
-     *                        or passLat = -1
-     */
-    private void findDestinationPath(double curLat, double curLng, double destLat, double destLng, double passLat, double passLng) {
-        TMapPoint curPoint = new TMapPoint(curLat, curLng);
-        TMapPoint destPoint = new TMapPoint(destLat, destLng);
-        mTMapView.setTMapPathIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_path_start)
-                , BitmapFactory.decodeResource(getResources(), R.drawable.ic_path_end));
-
-        TMapData tMapData = new TMapData();
-        if (passLat == -1) {
-            tMapData.findPathData(curPoint, destPoint, new TMapData.FindPathDataListenerCallback() {
-                @Override
-                public void onFindPathData(final TMapPolyLine tMapPolyLine) {
-                    if (tMapPolyLine != null) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mTMapView.addTMapPath(tMapPolyLine);
-                                    }
-                                });
-                            }
-                        }).start();
-                    }
-                }
-            });
-        } else {
-            ArrayList<TMapPoint> wayPoints = new ArrayList<>();
-            wayPoints.add(new TMapPoint(passLat, passLng));
-            tMapData.findMultiPointPathData(curPoint, destPoint, wayPoints, 0, new TMapData.FindPathDataListenerCallback() {
-                @Override
-                public void onFindPathData(final TMapPolyLine tMapPolyLine) {
-                    if (tMapPolyLine != null) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mTMapView.addTMapPath(tMapPolyLine);
-                                    }
-                                });
-                            }
-                        }).start();
-                    }
-                }
-            });
-        }
     }
 
     private void loadDestinationInfo() {
@@ -369,4 +369,62 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
             }
         });
     }
+
+    /**
+     * if it has waypoint,
+     *
+     * @param passLat,passLng absolutely necessary.
+     *                        or passLat = -1
+     */
+    private void findDestinationPath(double curLat, double curLng, double destLat, double destLng, double passLat, double passLng) {
+        TMapPoint curPoint = new TMapPoint(curLat, curLng);
+        TMapPoint destPoint = new TMapPoint(destLat, destLng);
+        mTMapView.setTMapPathIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_path_start)
+                , BitmapFactory.decodeResource(getResources(), R.drawable.ic_path_end));
+
+        TMapData tMapData = new TMapData();
+        if (passLat == -1) {
+            tMapData.findPathData(curPoint, destPoint, new TMapData.FindPathDataListenerCallback() {
+                @Override
+                public void onFindPathData(final TMapPolyLine tMapPolyLine) {
+                    if (tMapPolyLine != null) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mTMapView.addTMapPath(tMapPolyLine);
+                                    }
+                                });
+                            }
+                        }).start();
+                    }
+                }
+            });
+        } else {
+            ArrayList<TMapPoint> wayPoints = new ArrayList<>();
+            wayPoints.add(new TMapPoint(passLat, passLng));
+            tMapData.findMultiPointPathData(curPoint, destPoint, wayPoints, 0, new TMapData.FindPathDataListenerCallback() {
+                @Override
+                public void onFindPathData(final TMapPolyLine tMapPolyLine) {
+                    if (tMapPolyLine != null) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mTMapView.addTMapPath(tMapPolyLine);
+                                    }
+                                });
+                            }
+                        }).start();
+                    }
+                }
+            });
+        }
+    }
+
+
 }
