@@ -35,7 +35,7 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
         checkEnableUseLocation(MainActivity.this, new CheckPermissionListener() {
             @Override
             public void onReady() {
-                linkToTMap(station);
+                linkToTMap(station, null);
             }
         });
     }

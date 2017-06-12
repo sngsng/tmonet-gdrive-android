@@ -98,7 +98,7 @@ public class TMapBaseActivity extends BaseActivity {
         settingManager.setCurrentLongitude(location.getLongitude());
         Log.i(LOG_TAG, "updateLocation: curLat: " + location.getLatitude() + " / curLng: " + location.getLongitude());
 
-        if(mLocationChangedListener!= null) {
+        if (mLocationChangedListener != null) {
             mLocationChangedListener.onLocationChanged();
         }
     }
@@ -128,16 +128,42 @@ public class TMapBaseActivity extends BaseActivity {
         mChargeListDialogFragment.show(getSupportFragmentManager(), ChargeListDialogFragment.class.getSimpleName());
     }
 
-    public void linkToTMap(Object object) {
+    public void linkToTMap(ChargeStation station, SearchAddress address) {
         TMapTapi tMapTapi = new TMapTapi(this);
         tMapTapi.setSKPMapAuthentication(getString(R.string.t_map_api_key));
 
-        if (object instanceof ChargeStation) {
-            ChargeStation station = (ChargeStation) object;
-            checkHasTMap(tMapTapi, station.getName(), station.getLongitude(), station.getLatitude());
-        } else if (object instanceof SearchAddress) {
-            SearchAddress address = (SearchAddress) object;
-            checkHasTMap(tMapTapi, address.getName(), address.getLongitude(), address.getLatitude());
+        HashMap<String, String> pathInfo = new HashMap<>();
+
+        if (station != null && address != null) {
+            // 목적지 + 충전소 (경유지) 탐색
+            Log.i(LOG_TAG, "목적지 + 충전소 (경유지) 탐색");
+            pathInfo.put(APIConstants.TMap.R_GO_NAME, address.getName());
+            pathInfo.put(APIConstants.TMap.R_GO_Y, String.valueOf(address.getLatitude()));
+            pathInfo.put(APIConstants.TMap.R_GO_X, String.valueOf(address.getLongitude()));
+
+            pathInfo.put(APIConstants.TMap.R_V1_NAME, station.getName());
+            pathInfo.put(APIConstants.TMap.R_V1_Y, String.valueOf(station.getLatitude()));
+            pathInfo.put(APIConstants.TMap.R_V1_X, String.valueOf(station.getLongitude()));
+
+        } else {
+            if (station == null) {
+                // 목적지 탐색
+                Log.i(LOG_TAG, "목적지 탐색");
+                pathInfo.put(APIConstants.TMap.R_GO_NAME, address.getName());
+                pathInfo.put(APIConstants.TMap.R_GO_Y, String.valueOf(address.getLatitude()));
+                pathInfo.put(APIConstants.TMap.R_GO_X, String.valueOf(address.getLongitude()));
+            } else {
+                // 충전소 탐색
+                Log.i(LOG_TAG, "충전소 탐색");
+                pathInfo.put(APIConstants.TMap.R_GO_NAME, station.getName());
+                pathInfo.put(APIConstants.TMap.R_GO_Y, String.valueOf(station.getLatitude()));
+                pathInfo.put(APIConstants.TMap.R_GO_X, String.valueOf(station.getLongitude()));
+            }
+        }
+
+        if (!tMapTapi.invokeRoute(pathInfo)) {
+            showSnackbar(getString(R.string.error_no_cannot_found_t_map));
+            Log.i(LOG_TAG, "can not found t map");
         }
     }
 
@@ -158,24 +184,6 @@ public class TMapBaseActivity extends BaseActivity {
                 String[] requiredPermissions = settingManager.getRequiredPermissions(context, SettingManager.PermissionType.Location);
                 requestPermissions(requiredPermissions, REQ_LOCATION_PERMISSION);
             }
-        }
-    }
-
-    private void checkHasTMap(TMapTapi tMapTapi, String name, double lng, double lat) {
-
-        HashMap<String, String> pathInfo = new HashMap<>();
-        pathInfo.put(APIConstants.TMap.R_GO_NAME, name);
-        pathInfo.put(APIConstants.TMap.R_GO_Y, String.valueOf(lat));
-        pathInfo.put(APIConstants.TMap.R_GO_X, String.valueOf(lng));
-
-        // Test for set WayPoint:
-//        pathInfo.put(APIConstants.TMap.R_V1_NAME, "신도림");
-//        pathInfo.put(APIConstants.TMap.R_V1_Y, "37.50861147");
-//        pathInfo.put(APIConstants.TMap.R_V1_X, "126.8911457");
-
-        if (!tMapTapi.invokeRoute(pathInfo)) {
-            showSnackbar(getString(R.string.error_no_cannot_found_t_map));
-            Log.i(LOG_TAG, "can not found t map");
         }
     }
 

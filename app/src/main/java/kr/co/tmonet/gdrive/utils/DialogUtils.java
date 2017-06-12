@@ -14,7 +14,6 @@ import kr.co.tmonet.gdrive.R;
 public class DialogUtils {
 
     public static final int CHARGE_LIST_DIALOG_MARGIN = 36;
-    public static final int SEARCH_ADDRESS_DIALOG_MARGIN = 40;
 
     public static void showDialog(Context context, String msg, final View.OnClickListener actionCallback) {
         showDialog(context, msg, context.getString(R.string.title_retry), false, actionCallback);
@@ -48,5 +47,36 @@ public class DialogUtils {
 
         dialog.show();
     }
+
+    public static void showDialog(Context context, String msg, String positiveBtnText, String negativeBtnText, final View.OnClickListener positionCallback, final View.OnClickListener negativeCallback) {
+        final LovelyStandardDialog dialog = new LovelyStandardDialog(context)
+                .setTopColorRes(R.color.colorCharcoalGrey)
+                .setButtonsColorRes(R.color.colorCharcoalGrey)
+                .setIcon(R.mipmap.ic_launcher)
+                .setTitle(msg);
+
+        if (positionCallback != null) {
+            dialog.setPositiveButton(positiveBtnText, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    positionCallback.onClick(null);
+                }
+            });
+        }
+
+        if (negativeCallback != null) {
+            dialog.setNegativeButton(negativeBtnText, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    negativeCallback.onClick(null);
+                }
+            });
+        }
+
+        dialog.show();
+    }
+
+
+
 
 }

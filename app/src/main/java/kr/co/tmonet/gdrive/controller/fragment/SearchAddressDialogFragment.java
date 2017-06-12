@@ -135,12 +135,11 @@ public class SearchAddressDialogFragment extends DialogFragment {
             @Override
             public void onSearchTyping(String keyword) {
                 Log.i(LOG_TAG, "typing keyword : " + keyword);
-                if (!keyword.equals(mSearchKeyword)) {
-                    mSearchKeyword = keyword;
-                    mCurrentPage = 1;
-                    mSearchResults.clear();
-                    requestSearchAddress();
-                }
+
+                mSearchKeyword = keyword;
+                mCurrentPage = 1;
+                mSearchResults.clear();
+                requestSearchAddress();
             }
 
             @Override

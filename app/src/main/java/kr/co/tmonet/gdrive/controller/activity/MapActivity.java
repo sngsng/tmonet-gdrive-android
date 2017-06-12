@@ -12,7 +12,6 @@ import android.view.View;
 import com.google.android.gms.maps.model.LatLng;
 import com.skp.Tmap.TMapCircle;
 import com.skp.Tmap.TMapData;
-import com.skp.Tmap.TMapGpsManager;
 import com.skp.Tmap.TMapMarkerItem;
 import com.skp.Tmap.TMapPoint;
 import com.skp.Tmap.TMapPolyLine;
@@ -50,7 +49,6 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     private ArrayList<String> mMarkerIds = new ArrayList<>();
     private SearchAddress mSearchAddress = new SearchAddress();
     private TMapView mTMapView;
-    private TMapGpsManager mTMapGpsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,16 +73,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         checkEnableUseLocation(MapActivity.this, new CheckPermissionListener() {
             @Override
             public void onReady() {
-                if (isWayPoint) {
-                    final double curLat = SettingManager.getInstance().getCurrentLatitude();
-                    final double curLng = SettingManager.getInstance().getCurrentLongitude();
-                    final double destLat = mSearchAddress.getLatitude();
-                    final double destLng = mSearchAddress.getLongitude();
-                    findDestinationPath(curLat, curLng, destLat, destLng, station.getLatitude(), station.getLongitude());
-                } else {
-                    linkToTMap(station);
-                }
-
+                linkToTMap(station, isWayPoint ? mSearchAddress : null);
             }
         });
     }
@@ -111,7 +100,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
                 if (mTMapView != null) {
                     Log.i(LOG_TAG, "LOCATION CHANGED !!");
                     mTMapView.setLocationPoint(SettingManager.getInstance().getCurrentLongitude(), SettingManager.getInstance().getCurrentLatitude());
-                    mTMapView.setCenterPoint(mTMapView.getLocationPoint().getLongitude(), mTMapView.getLocationPoint().getLatitude());
+//                    mTMapView.setCenterPoint(mTMapView.getLocationPoint().getLongitude(), mTMapView.getLocationPoint().getLatitude());
                 }
             }
         });
@@ -164,7 +153,11 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
             @Override
             public void onLinkTMapToFindPath() {
                 if (mSearchAddress != null) {
-                    linkToTMap(mSearchAddress);
+                    if (Double.parseDouble(mSearchAddress.getDistance()) > 100.0) { // TODO if distance > Enable running distance (battery + footer info)
+                        showAddWayPointDialog();
+                    } else {
+                        linkToTMap(null, mSearchAddress);
+                    }
                 }
             }
         });
@@ -187,12 +180,6 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         mTMapView.setMapType(TMapView.MAPTYPE_STANDARD);
         mTMapView.setCompassMode(false);
         mTMapView.setTrackingMode(true);
-
-//        mTMapGpsManager = new TMapGpsManager(MapActivity.this);
-//        mTMapGpsManager.setMinTime(1000);
-//        mTMapGpsManager.setMinDistance(5);
-//        mTMapGpsManager.setProvider(mTMapGpsManager.GPS_PROVIDER);
-//        mTMapGpsManager.OpenGps();
 
         setRadiusCircle();
 
@@ -335,11 +322,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
                         // TODO get expect consume, remain battery data to fill in SearchResultLayout
                         mActivityHelper.fillSearchReslut(mSearchAddress);
 
-                        findDestinationPath(curLat, curLng, destLat, destLng, -1, -1);
-
-                        if (true) { // TODO if distance > Enable running distance (battery + footer info)
-                            showAddWayPointDialog();
-                        }
+                        findDestinationPath(curLat, curLng, destLat, destLng);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -362,68 +345,47 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     }
 
     private void showAddWayPointDialog() {
-        DialogUtils.showDialog(MapActivity.this, getString(R.string.title_msg_ask_add_way_point), getString(R.string.title_submit), true, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showChargeStationListDialog(true);
-            }
-        });
+        DialogUtils.showDialog(MapActivity.this, getString(R.string.title_msg_ask_add_way_point), getString(R.string.title_yes), getString(R.string.title_no), new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showChargeStationListDialog(true);
+                    }
+                },
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        linkToTMap(null, mSearchAddress);
+                    }
+                });
     }
 
-    /**
-     * if it has waypoint,
-     *
-     * @param passLat,passLng absolutely necessary.
-     *                        or passLat = -1
-     */
-    private void findDestinationPath(double curLat, double curLng, double destLat, double destLng, double passLat, double passLng) {
+    private void findDestinationPath(double curLat, double curLng, double destLat, double destLng) {
         TMapPoint curPoint = new TMapPoint(curLat, curLng);
         TMapPoint destPoint = new TMapPoint(destLat, destLng);
         mTMapView.setTMapPathIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_path_start)
                 , BitmapFactory.decodeResource(getResources(), R.drawable.ic_path_end));
 
         TMapData tMapData = new TMapData();
-        if (passLat == -1) {
-            tMapData.findPathData(curPoint, destPoint, new TMapData.FindPathDataListenerCallback() {
-                @Override
-                public void onFindPathData(final TMapPolyLine tMapPolyLine) {
-                    if (tMapPolyLine != null) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mTMapView.addTMapPath(tMapPolyLine);
-                                    }
-                                });
-                            }
-                        }).start();
-                    }
+
+        tMapData.findPathData(curPoint, destPoint, new TMapData.FindPathDataListenerCallback() {
+            @Override
+            public void onFindPathData(final TMapPolyLine tMapPolyLine) {
+                if (tMapPolyLine != null) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mTMapView.addTMapPath(tMapPolyLine);
+                                }
+                            });
+                        }
+                    }).start();
                 }
-            });
-        } else {
-            ArrayList<TMapPoint> wayPoints = new ArrayList<>();
-            wayPoints.add(new TMapPoint(passLat, passLng));
-            tMapData.findMultiPointPathData(curPoint, destPoint, wayPoints, 0, new TMapData.FindPathDataListenerCallback() {
-                @Override
-                public void onFindPathData(final TMapPolyLine tMapPolyLine) {
-                    if (tMapPolyLine != null) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mTMapView.addTMapPath(tMapPolyLine);
-                                    }
-                                });
-                            }
-                        }).start();
-                    }
-                }
-            });
-        }
+            }
+        });
+
     }
 
 

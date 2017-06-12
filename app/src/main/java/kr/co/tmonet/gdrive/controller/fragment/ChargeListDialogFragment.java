@@ -132,6 +132,7 @@ public class ChargeListDialogFragment extends DialogFragment {
             public void onStationItemClick(int position) {
                 if (mListener != null) {
                     mListener.onStationItemClick(position, mIsWayPoint);
+                    dismiss();
                 }
             }
         });
