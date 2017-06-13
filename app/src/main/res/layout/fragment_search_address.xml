@@ -16,7 +16,7 @@
             android:layout_gravity="top|start"
             android:layout_marginLeft="40dp"
             android:layout_marginStart="40dp"
-            android:background="@drawable/shape_dark_bg_radius12"
+            android:background="@drawable/shape_dark_bg_bottom_radius12"
             android:orientation="vertical">
 
             <LinearLayout

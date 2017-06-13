@@ -28,6 +28,7 @@
 
     <color name="colorDodgerBlue">#3eb0ff</color>
     <color name="colorSkyBlue">#4abfff</color>
+    <color name="colorSkyBlue10">#193fa7e1</color>
     <color name="colorSkyBlue17">#174abfff</color>
 
     <color name="colorLightishRed">#fc353f</color>

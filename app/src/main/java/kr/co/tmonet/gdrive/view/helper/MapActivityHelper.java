@@ -61,6 +61,8 @@ public class MapActivityHelper extends ViewHelper implements View.OnClickListene
         mBinding.chargeStationImageView.setOnClickListener(this);
         mBinding.currentLocateImageView.setOnClickListener(this);
         mBinding.search.findPathButton.setOnClickListener(this);
+        mBinding.zoomInImageView.setOnClickListener(this);
+        mBinding.zoomOutImageView.setOnClickListener(this);
     }
 
 
@@ -86,6 +88,12 @@ public class MapActivityHelper extends ViewHelper implements View.OnClickListene
                 case R.id.find_path_button:
                     mEventCallback.onLinkTMapToFindPath();
                     break;
+                case R.id.zoom_in_image_view:
+                    mEventCallback.onZoomInButtonClick();
+                    break;
+                case R.id.zoom_out_image_view:
+                    mEventCallback.onZoomOutButtonClick();
+                    break;
             }
         }
     }
@@ -102,5 +110,9 @@ public class MapActivityHelper extends ViewHelper implements View.OnClickListene
         void onCurrentLocateClick();
 
         void onLinkTMapToFindPath();
+
+        void onZoomInButtonClick();
+
+        void onZoomOutButtonClick();
     }
 }

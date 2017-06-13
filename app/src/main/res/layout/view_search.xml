@@ -15,7 +15,7 @@
             android:id="@+id/before_search_layout"
             android:layout_width="480dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_dark_bg_radius12"
+            android:background="@drawable/shape_dark_bg_bottom_radius12"
             android:orientation="vertical"
             android:padding="20dp"
             android:visibility="visible">
