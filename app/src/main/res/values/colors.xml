@@ -11,6 +11,7 @@
 
     <color name="colorCharcoalGrey">#303d47</color>
     <color name="colorAlmostBlack">#0b0f12</color>
+    <color name="colorGunmetal">#43515B</color>
 
     <color name="colorDarkGrey">#1f2023</color>
     <color name="colorDarkGrey85">#d91f2023</color>
@@ -19,6 +20,7 @@
     <color name="colorGreyish">#afafaf</color>
     <color name="colorGreyishBrown">#5a5a5a</color>
 
+    <color name="colorBlack">#202020</color>
     <color name="colorBlack40">#66202020</color>
     <color name="colorBlack70">#b3202020</color>
     <color name="colorDarkBlueGrey">#10202b</color>

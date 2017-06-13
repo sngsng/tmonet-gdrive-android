@@ -3,6 +3,7 @@ package kr.co.tmonet.gdrive.controller.activity;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PointF;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.skp.Tmap.TMapCircle;
 import com.skp.Tmap.TMapData;
 import com.skp.Tmap.TMapMarkerItem;
+import com.skp.Tmap.TMapPOIItem;
 import com.skp.Tmap.TMapPoint;
 import com.skp.Tmap.TMapPolyLine;
 import com.skp.Tmap.TMapView;
@@ -23,6 +25,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import kr.co.tmonet.gdrive.R;
+import kr.co.tmonet.gdrive.controller.fragment.AlertDialogFragment;
 import kr.co.tmonet.gdrive.controller.fragment.ChargeListDialogFragment;
 import kr.co.tmonet.gdrive.controller.fragment.SearchAddressDialogFragment;
 import kr.co.tmonet.gdrive.databinding.ActivityMapBinding;
@@ -32,11 +35,10 @@ import kr.co.tmonet.gdrive.model.SearchAddress;
 import kr.co.tmonet.gdrive.model.TMapViewAttr;
 import kr.co.tmonet.gdrive.network.APIConstants;
 import kr.co.tmonet.gdrive.network.RestClient;
-import kr.co.tmonet.gdrive.utils.DialogUtils;
 import kr.co.tmonet.gdrive.utils.ModelUtils;
 import kr.co.tmonet.gdrive.view.helper.MapActivityHelper;
 
-public class MapActivity extends TMapBaseActivity implements ChargeListDialogFragment.OnFragmentInteractionListener, SearchAddressDialogFragment.OnFragmentInteractionListener {
+public class MapActivity extends TMapBaseActivity implements AlertDialogFragment.OnFragmentInteractionListener, ChargeListDialogFragment.OnFragmentInteractionListener, SearchAddressDialogFragment.OnFragmentInteractionListener {
 
     private static final String LOG_TAG = MapActivity.class.getSimpleName();
     private static final String KEY_SEARCH_ADDRESS = "keySearchAddress";
@@ -45,6 +47,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     private ActivityMapBinding mBinding;
     private MapActivityHelper mActivityHelper;
     private SearchAddressDialogFragment mSearchAddressDialogFragment;
+    private AlertDialogFragment mAlertDialogFragment;
     private View mDecorView;
     private int mUiOption;
 
@@ -52,7 +55,6 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     private SearchAddress mSearchAddress = new SearchAddress();
     private TMapView mTMapView;
     private TMapViewAttr mTMapViewAttr;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,11 +94,28 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     }
 
     @Override
+    public void onStationDialogCancelClick(boolean isWayPoint) {
+
+        if (isWayPoint) {
+            linkToTMap(null, mSearchAddress);
+        }
+    }
+
+    @Override
+    public void onAlertSubmitClick() {
+        showChargeStationListDialog(true);
+    }
+
+    @Override
+    public void onAlertCancelClick() {
+        linkToTMap(null, mSearchAddress);
+    }
+
+    @Override
     public void onSelectAddress(SearchAddress address) {
         mSearchAddress = address;
 
         requestGeoCoding(address);
-
     }
 
     @Override
@@ -113,6 +132,8 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
             public void onLocationChanged() {
                 if (mTMapView != null) {
                     mTMapView.setLocationPoint(SettingManager.getInstance().getCurrentLongitude(), SettingManager.getInstance().getCurrentLatitude());
+                    mTMapView.setCenterPoint(SettingManager.getInstance().getCurrentLongitude(), SettingManager.getInstance().getCurrentLatitude());
+
                 }
             }
         });
@@ -187,7 +208,6 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
                 }
             }
         });
-
     }
 
     private void initializeTMap() {
@@ -203,7 +223,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         mTMapView.setIconVisibility(true);
         mTMapView.setMapType(TMapView.MAPTYPE_STANDARD);
         mTMapView.setCompassMode(false);
-        mTMapView.setTrackingMode(true);
+        mTMapView.setTrackingMode(false);
 
         if (mTMapViewAttr != null) {
             Log.i(LOG_TAG, "ATTR is not null: load Attr: ");
@@ -219,6 +239,22 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         mActivityHelper.addTMapView(mTMapView);
 
         setChargeStationMarkerPoint();
+
+        mTMapView.setOnClickListenerCallBack(new TMapView.OnClickListenerCallback() {
+            @Override
+            public boolean onPressEvent(ArrayList<TMapMarkerItem> arrayList, ArrayList<TMapPOIItem> arrayList1, TMapPoint tMapPoint, PointF pointF) {
+                mTMapView.setTrackingMode(false);
+                showToast("tracking off");
+                return false;
+            }
+
+            @Override
+            public boolean onPressUpEvent(ArrayList<TMapMarkerItem> arrayList, ArrayList<TMapPOIItem> arrayList1, TMapPoint tMapPoint, PointF pointF) {
+                return false;
+            }
+        });
+
+
     }
 
     private void setRadiusCircle() {
@@ -252,6 +288,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         mTMapView.addTMapCircle("cId3", circleL);
 
     }
+
 
     private void setChargeStationMarkerPoint() {
 
@@ -290,6 +327,8 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     }
 
     private void foundCurrentLocation() {
+        mTMapView.setTrackingMode(true);
+        showToast("tracking on");
         mTMapView.setCenterPoint(SettingManager.getInstance().getCurrentLongitude(), SettingManager.getInstance().getCurrentLatitude(), true);
     }
 
@@ -380,18 +419,11 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     }
 
     private void showAddWayPointDialog() {
-        DialogUtils.showDialog(MapActivity.this, getString(R.string.title_msg_ask_add_way_point), getString(R.string.title_yes), getString(R.string.title_no), new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        showChargeStationListDialog(true);
-                    }
-                },
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        linkToTMap(null, mSearchAddress);
-                    }
-                });
+        // TODO 예상 주행 가능 거리 계산???
+        if (mAlertDialogFragment == null) {
+            mAlertDialogFragment = AlertDialogFragment.newInstance(mSearchAddress.getDistance(), "18");
+        }
+        mAlertDialogFragment.show(getSupportFragmentManager(), AlertDialogFragment.class.getSimpleName());
     }
 
     private void findDestinationPath(double curLat, double curLng, double destLat, double destLng) {
@@ -422,6 +454,4 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         });
         dismissProgressDialog();
     }
-
-
 }

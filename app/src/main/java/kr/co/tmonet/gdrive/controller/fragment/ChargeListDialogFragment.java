@@ -2,6 +2,7 @@ package kr.co.tmonet.gdrive.controller.fragment;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -11,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,7 +72,7 @@ public class ChargeListDialogFragment extends DialogFragment {
             dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
             dialog.getWindow().getAttributes().windowAnimations = R.style.AppDialogAnimation;
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            dialog.setCanceledOnTouchOutside(true);
+            dialog.setCanceledOnTouchOutside(false);
         }
         return dialog;
     }
@@ -112,6 +114,8 @@ public class ChargeListDialogFragment extends DialogFragment {
         mListener = null;
     }
 
+
+
     private void setUpViews() {
         mChargeStationAdapter = new ChargeStationAdapter(getActivity());
         mBinding.chargeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -132,19 +136,34 @@ public class ChargeListDialogFragment extends DialogFragment {
             public void onStationItemClick(int position) {
                 if (mListener != null) {
                     mListener.onStationItemClick(position, mIsWayPoint);
-                    dismiss();
                 }
+                dismiss();
             }
         });
         mBinding.closeImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mListener != null) {
+                    mListener.onStationDialogCancelClick(mIsWayPoint);
+                }
                 dismiss();
+            }
+        });
+
+        getDialog().setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if(keyCode == KeyEvent.KEYCODE_BACK && mListener != null) {
+                    mListener.onStationDialogCancelClick(mIsWayPoint);
+                }
+                return false;
             }
         });
     }
 
     public interface OnFragmentInteractionListener {
         void onStationItemClick(int position, boolean isWayPoint);
+
+        void onStationDialogCancelClick(boolean isWayPoint);
     }
 }

@@ -9,6 +9,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import kr.co.tmonet.gdrive.model.GlobalInfo;
 import kr.co.tmonet.gdrive.network.APIConstants;
 import kr.co.tmonet.gdrive.utils.AppUtils;
 
@@ -28,6 +29,7 @@ public class SettingManager {
     private Activity mCurrentActivity;
     private Double mCurrentLatitude = APIConstants.GeoCoding.DEF_LAT;
     private Double mCurrentLongitude = APIConstants.GeoCoding.DEF_LNG;
+    private GlobalInfo mGlobalInfo;
 
     public enum PermissionType {
         Init,
@@ -101,5 +103,13 @@ public class SettingManager {
 
     public void setCurrentLongitude(Double currentLongitude) {
         mCurrentLongitude = currentLongitude;
+    }
+
+    public GlobalInfo getGlobalInfo() {
+        return mGlobalInfo;
+    }
+
+    public void setGlobalInfo(GlobalInfo globalInfo) {
+        mGlobalInfo = globalInfo;
     }
 }

@@ -43,7 +43,7 @@ public class TMapBaseActivity extends BaseActivity {
     private static final String LOG_TAG = TMapBaseActivity.class.getSimpleName();
     public static final int REQ_LOCATION_PERMISSION = 0;
 
-    private ChargeListDialogFragment mChargeListDialogFragment;
+    public ChargeListDialogFragment mChargeListDialogFragment;
     public ArrayList<ChargeStation> mChargeStations = ModelManager.getInstance().getChargeStationList();
 
     public LocationChangedListener mLocationChangedListener;
@@ -118,6 +118,7 @@ public class TMapBaseActivity extends BaseActivity {
     }
 
     public void showChargeStationListDialog(boolean isWayPoint) {
+
         if (mChargeListDialogFragment == null) {
             if (isWayPoint) {
                 mChargeListDialogFragment = ChargeListDialogFragment.newInstance(mChargeStations, true);

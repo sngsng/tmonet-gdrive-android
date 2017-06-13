@@ -40,6 +40,11 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
         });
     }
 
+    @Override
+    public void onStationDialogCancelClick(boolean isWayPoint) {
+
+    }
+
     private void setUpViews() {
         // TODO Check isShareing state
         // TODO if isShareing -> Fill data
