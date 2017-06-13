@@ -133,7 +133,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_empty_result"/>
+                        android:src="@drawable/ic_empty_result_103_x_103"/>
 
                     <kr.co.tmonet.gdrive.view.NotoTextView
                         android:layout_width="wrap_content"

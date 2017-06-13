@@ -66,14 +66,14 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:visibility="gone"
                     android:id="@+id/result_count_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="30dp"
                     android:layout_marginStart="30dp"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
                     <kr.co.tmonet.gdrive.view.NotoTextView
                         android:layout_width="wrap_content"
@@ -131,7 +131,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_empty_result"/>
+                        android:src="@drawable/ic_empty_result_103_x_103"/>
 
                     <kr.co.tmonet.gdrive.view.NotoTextView
                         android:layout_width="wrap_content"

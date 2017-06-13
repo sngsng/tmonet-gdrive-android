@@ -217,6 +217,11 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
             public void onZoomOutButtonClick() {
                 mTMapView.MapZoomOut();
             }
+
+            @Override
+            public void onHomeButtonClick() {
+                finish();
+            }
         });
     }
 
