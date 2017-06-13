@@ -33,7 +33,7 @@ public class SearchAddress implements Parcelable {
     private String mSggNm;          // 마포구
     private String mEmdNm;          // 서교동
     private String mName;           // bdNm or emdNm
-
+    private String mRoadName;       // roadName + suffix (잔다리로3안길 51-1)
     private double mLatitude;
     private double mLongitude;
     private String mDistance;
@@ -82,6 +82,28 @@ public class SearchAddress implements Parcelable {
                 String bdNm = jsonObject.getString(APIConstants.AddressSearch.BD_NM);
                 address.setName(bdNm.isEmpty() ? address.getEmdNm() : bdNm);
             }
+            if (jsonObject.has(APIConstants.AddressSearch.RN) && !jsonObject.isNull(APIConstants.AddressSearch.RN)) {
+                String rn = jsonObject.getString(APIConstants.AddressSearch.RN);
+                String rn_suffix = "";
+                if (jsonObject.has(APIConstants.AddressSearch.BULD_MNNM) && !jsonObject.isNull(APIConstants.AddressSearch.BULD_MNNM)) {
+                    if (!jsonObject.getString(APIConstants.AddressSearch.BULD_MNNM).isEmpty()) {
+                        rn_suffix = jsonObject.getString(APIConstants.AddressSearch.BULD_MNNM);
+                    }
+                }
+
+                if (jsonObject.has(APIConstants.AddressSearch.BULD_SLNO) && !jsonObject.isNull(APIConstants.AddressSearch.BULD_SLNO)) {
+                    if (!jsonObject.getString(APIConstants.AddressSearch.BULD_SLNO).isEmpty()) {
+                        rn_suffix = rn_suffix + "-" + jsonObject.getString(APIConstants.AddressSearch.BULD_SLNO);
+                    }
+                }
+
+                if (!rn_suffix.isEmpty()) {
+                    rn = rn + " " + rn_suffix;
+                }
+
+                address.setRoadName(rn);
+            }
+
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -150,19 +172,25 @@ public class SearchAddress implements Parcelable {
         });
     }
 
-    public static void getGeoCoding(Context context, String address, final RestClient.RestListener listener) {
+    public static void getTMapGeoCoding(final Context context, SearchAddress address, final RestClient.RestListener listener) {
+        Log.i(LOG_TAG, "searchAddress: " + address.toString());
         JSONObject params = new JSONObject();
         try {
-            params.put(APIConstants.GeoCoding.KEY, context.getString(R.string.google_geocoding_api_key));
-            params.put(APIConstants.GeoCoding.ADDRESS, address);
+            params.put(APIConstants.TMap.VERSION, APIConstants.TMap.VERSION_VALUE_1);
+            params.put(APIConstants.GeoCoding.CITY_DO, address.getSiNm());
+            params.put(APIConstants.GeoCoding.GU_GUN, address.getSggNm());
+            params.put(APIConstants.GeoCoding.DONG, address.getRoadName());
+            params.put(APIConstants.GeoCoding.ADDRESS_FLAG, APIConstants.GeoCoding.ADDR_FLAG_ROAD);
+            params.put(APIConstants.GeoCoding.COORD_TYPE, APIConstants.TMap.COORD_TYPE_VALUE);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         String url = ModelUtils.getQueryAppendedUrlFromJson(APIConstants.GeoCoding.URL, params);
-        Log.i(LOG_TAG, "geoCoding url: " + url);
+        Log.i(LOG_TAG, "TMAP GEO : " + url);
         RestClient restClient = new RestClient(context);
-        restClient.request(RestClient.Method.GET, url, null, new RestClient.RestListener() {
+        restClient.requestForTMapAPI(RestClient.Method.GET, url, null, new RestClient.RestListener() {
             @Override
             public void onBefore() {
                 listener.onBefore();
@@ -170,33 +198,24 @@ public class SearchAddress implements Parcelable {
 
             @Override
             public void onSuccess(Object response) {
-                Log.i(LOG_TAG, "Geo: " + response.toString());
+                JSONObject responseJson = (JSONObject) response;
+                Log.i(LOG_TAG, "TMAP GEO: " + responseJson.toString());
                 double lat = APIConstants.GeoCoding.DEF_LAT;
                 double lng = APIConstants.GeoCoding.DEF_LNG;
-
-                JSONObject responseJson = (JSONObject) response;
-                if (responseJson.has(APIConstants.GeoCoding.RESULTS)) {
-                    try {
-                        JSONArray results = ((JSONObject) response).getJSONArray(APIConstants.GeoCoding.RESULTS);
-                        if (results.length() > 0) {
-                            JSONObject result = results.getJSONObject(0);
-                            if (result.has(APIConstants.GeoCoding.GEOMETRY)) {
-                                JSONObject geometry = result.getJSONObject(APIConstants.GeoCoding.GEOMETRY);
-                                if (geometry.has(APIConstants.GeoCoding.LOCATION)) {
-                                    JSONObject location = geometry.getJSONObject(APIConstants.GeoCoding.LOCATION);
-                                    if (location.has(APIConstants.GeoCoding.LAT)) {
-                                        lat = location.getDouble(APIConstants.GeoCoding.LAT);
-                                    }
-                                    if (location.has(APIConstants.GeoCoding.LNG)) {
-                                        lng = location.getDouble(APIConstants.GeoCoding.LNG);
-                                    }
-                                }
-                            }
+                try {
+                    if (responseJson.has(APIConstants.GeoCoding.COORDINATE_INFO)) {
+                        JSONObject coordinateInfo = responseJson.getJSONObject(APIConstants.GeoCoding.COORDINATE_INFO);
+                        if (coordinateInfo.has(APIConstants.GeoCoding.NEW_LAT)) {
+                            lat = Double.parseDouble(coordinateInfo.getString(APIConstants.GeoCoding.NEW_LAT));
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                        if (coordinateInfo.has(APIConstants.GeoCoding.NEW_LNG)) {
+                            lng = Double.parseDouble(coordinateInfo.getString(APIConstants.GeoCoding.NEW_LNG));
+                        }
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
+
                 listener.onSuccess(new LatLng(lat, lng));
             }
 
@@ -221,17 +240,17 @@ public class SearchAddress implements Parcelable {
             params.put(APIConstants.TMap.START_X, startLng);
             params.put(APIConstants.TMap.END_Y, endLat);
             params.put(APIConstants.TMap.END_X, endLng);
-            params.put(APIConstants.TMap.COORD_TYPE, APIConstants.TMap.COORD_TYPE_VALUE);
+            params.put(APIConstants.TMap.REQ_COORD_TYPE, APIConstants.TMap.COORD_TYPE_VALUE);
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        String url = ModelUtils.getQueryAppendedUrlFromJson(APIConstants.TMap.URL, params);
+        String url = ModelUtils.getQueryAppendedUrlFromJson(APIConstants.TMap.ROUTE_URL, params);
 
         Log.i(LOG_TAG, "time & distance url: " + url);
         RestClient restClient = new RestClient(context);
-        restClient.requestForTMapAPI(RestClient.Method.GET, url, null, new RestClient.RestListener() {
+        restClient.requestForTMapAPI(RestClient.Method.POST, url, null, new RestClient.RestListener() {
             @Override
             public void onBefore() {
                 listener.onBefore();
@@ -370,6 +389,14 @@ public class SearchAddress implements Parcelable {
         mLeadTime = leadTime;
     }
 
+    public String getRoadName() {
+        return mRoadName;
+    }
+
+    public void setRoadName(String roadName) {
+        mRoadName = roadName;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -386,6 +413,7 @@ public class SearchAddress implements Parcelable {
         dest.writeString(this.mSggNm);
         dest.writeString(this.mEmdNm);
         dest.writeString(this.mName);
+        dest.writeString(this.mRoadName);
         dest.writeDouble(this.mLatitude);
         dest.writeDouble(this.mLongitude);
         dest.writeString(this.mDistance);
@@ -402,6 +430,7 @@ public class SearchAddress implements Parcelable {
         this.mSggNm = in.readString();
         this.mEmdNm = in.readString();
         this.mName = in.readString();
+        this.mRoadName = in.readString();
         this.mLatitude = in.readDouble();
         this.mLongitude = in.readDouble();
         this.mDistance = in.readString();
@@ -419,4 +448,24 @@ public class SearchAddress implements Parcelable {
             return new SearchAddress[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "SearchAddress{" +
+                "mRoadAddress='" + mRoadAddress + '\'' +
+                ", mRoadAddrPart1='" + mRoadAddrPart1 + '\'' +
+                ", mRoadAddrPart2='" + mRoadAddrPart2 + '\'' +
+                ", mJibunAddress='" + mJibunAddress + '\'' +
+                ", mPostCode='" + mPostCode + '\'' +
+                ", mSiNm='" + mSiNm + '\'' +
+                ", mSggNm='" + mSggNm + '\'' +
+                ", mEmdNm='" + mEmdNm + '\'' +
+                ", mName='" + mName + '\'' +
+                ", mRoadName='" + mRoadName + '\'' +
+                ", mLatitude=" + mLatitude +
+                ", mLongitude=" + mLongitude +
+                ", mDistance='" + mDistance + '\'' +
+                ", mLeadTime='" + mLeadTime + '\'' +
+                '}';
+    }
 }

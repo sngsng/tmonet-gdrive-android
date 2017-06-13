@@ -2,6 +2,7 @@ package kr.co.tmonet.gdrive.controller.fragment;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -41,6 +42,7 @@ import static kr.co.tmonet.gdrive.model.SearchAddress.getSearchAddressFromJson;
 public class SearchAddressDialogFragment extends DialogFragment {
 
     private static final String LOG_TAG = SearchAddressDialogFragment.class.getSimpleName();
+    private static final String KEY_SEARCH_KEYWORD = "keySearchKeyword";
 
     private ArrayList<SearchAddress> mSearchResults = new ArrayList<>();
 
@@ -96,6 +98,11 @@ public class SearchAddressDialogFragment extends DialogFragment {
         mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_search_address, container, false);
         View rootView = mBinding.getRoot();
 
+        if (savedInstanceState != null) {
+            mSearchKeyword = savedInstanceState.getString(KEY_SEARCH_KEYWORD);
+            Log.i(LOG_TAG, "Load searchKeyword " + mSearchKeyword);
+        }
+
         setUpViews(rootView);
         return rootView;
     }
@@ -114,9 +121,24 @@ public class SearchAddressDialogFragment extends DialogFragment {
         mListener = null;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.i(LOG_TAG, "save searchKeyword" + mSearchKeyword);
+        outState.putString(KEY_SEARCH_KEYWORD, mSearchKeyword);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        getActivity();
+    }
 
     private void setUpViews(View rootView) {
         mFragmentHelper = new SearchAddressDialogFragmentHelper((AppCompatActivity) getActivity(), rootView, mBinding);
+        if (!mSearchKeyword.isEmpty()) {
+            mFragmentHelper.updateKeyword(mSearchKeyword);
+        }
         mFragmentHelper.setEventCallback(new SearchAddressDialogFragmentHelper.EventCallback() {
             @Override
             public void onAddressItemClick(int position) {
@@ -135,22 +157,31 @@ public class SearchAddressDialogFragment extends DialogFragment {
             @Override
             public void onSearchTyping(String keyword) {
                 Log.i(LOG_TAG, "typing keyword : " + keyword);
-
-                mSearchKeyword = keyword;
-                mCurrentPage = 1;
                 mSearchResults.clear();
-                requestSearchAddress();
+                if (!keyword.isEmpty()) {
+                    mSearchKeyword = keyword;
+                    mCurrentPage = 1;
+                    requestSearchAddress();
+                } else {
+                    mFragmentHelper.updateList(mSearchResults);
+                    mFragmentHelper.updateTotalCount("");
+                }
             }
 
             @Override
             public void onSearchSubmit(String keyword) {
                 ((BaseActivity) getActivity()).hideKeyboard(getActivity());
                 Log.i(LOG_TAG, "search keyword : " + keyword);
-
-                mSearchKeyword = keyword;
-                mCurrentPage = 1;
                 mSearchResults.clear();
-                requestSearchAddress();
+                if (!keyword.isEmpty()) {
+                    mSearchKeyword = keyword;
+                    mCurrentPage = 1;
+                    requestSearchAddress();
+                } else {
+                    mFragmentHelper.updateList(mSearchResults);
+                    mFragmentHelper.updateTotalCount("");
+                }
+
 
             }
 

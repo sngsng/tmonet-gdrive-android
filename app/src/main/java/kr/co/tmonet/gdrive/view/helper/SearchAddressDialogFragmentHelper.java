@@ -44,7 +44,12 @@ public class SearchAddressDialogFragmentHelper extends ViewHelper {
     }
 
     public void updateTotalCount(String totalCount) {
-        mBinding.resultCountTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_search_count_format), totalCount));
+        if (!totalCount.isEmpty()) {
+            mBinding.resultCountLayout.setVisibility(View.VISIBLE);
+            mBinding.resultCountTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_search_count_format), totalCount));
+        } else {
+            mBinding.resultCountLayout.setVisibility(View.GONE);
+        }
     }
 
     public void updateList(ArrayList<SearchAddress> searchResults) {
@@ -53,6 +58,10 @@ public class SearchAddressDialogFragmentHelper extends ViewHelper {
 
         mAdapter.setSearchAddresses(searchResults);
         mAdapter.notifyDataSetChanged();
+    }
+
+    public void updateKeyword(String keyword) {
+        mBinding.searchEditText.setText(keyword);
     }
 
     private void setUpList() {

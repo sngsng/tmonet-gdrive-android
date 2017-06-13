@@ -29,6 +29,7 @@ import kr.co.tmonet.gdrive.databinding.ActivityMapBinding;
 import kr.co.tmonet.gdrive.manager.SettingManager;
 import kr.co.tmonet.gdrive.model.ChargeStation;
 import kr.co.tmonet.gdrive.model.SearchAddress;
+import kr.co.tmonet.gdrive.model.TMapViewAttr;
 import kr.co.tmonet.gdrive.network.APIConstants;
 import kr.co.tmonet.gdrive.network.RestClient;
 import kr.co.tmonet.gdrive.utils.DialogUtils;
@@ -39,6 +40,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
 
     private static final String LOG_TAG = MapActivity.class.getSimpleName();
     private static final String KEY_SEARCH_ADDRESS = "keySearchAddress";
+    private static final String KEY_TMAP_VIEW_ATTR = "keyTMapViewAttr";
 
     private ActivityMapBinding mBinding;
     private MapActivityHelper mActivityHelper;
@@ -49,11 +51,19 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     private ArrayList<String> mMarkerIds = new ArrayList<>();
     private SearchAddress mSearchAddress = new SearchAddress();
     private TMapView mTMapView;
+    private TMapViewAttr mTMapViewAttr;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_map);
+
+        if (savedInstanceState != null) {
+
+            mTMapViewAttr = savedInstanceState.getParcelable(KEY_TMAP_VIEW_ATTR);
+            mSearchAddress = savedInstanceState.getParcelable(KEY_SEARCH_ADDRESS);
+        }
 
         setScreenSizeFull();
         setUpViews();
@@ -64,7 +74,10 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         super.onSaveInstanceState(outState);
         Log.i(LOG_TAG, "onSaveInstanceState : searchAddress");
 
-        // TODO SAVE mSearchAddress, mTMapView
+        saveTMapAttribute();
+
+        outState.putParcelable(KEY_SEARCH_ADDRESS, mSearchAddress);
+        outState.putParcelable(KEY_TMAP_VIEW_ATTR, mTMapViewAttr);
     }
 
     @Override
@@ -82,7 +95,8 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     public void onSelectAddress(SearchAddress address) {
         mSearchAddress = address;
 
-        requestGoogleGeoCoding(address.getRoadAddress());
+        requestGeoCoding(address);
+
     }
 
     @Override
@@ -98,13 +112,20 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
             @Override
             public void onLocationChanged() {
                 if (mTMapView != null) {
-                    Log.i(LOG_TAG, "LOCATION CHANGED !!");
                     mTMapView.setLocationPoint(SettingManager.getInstance().getCurrentLongitude(), SettingManager.getInstance().getCurrentLatitude());
-//                    mTMapView.setCenterPoint(mTMapView.getLocationPoint().getLongitude(), mTMapView.getLocationPoint().getLatitude());
                 }
             }
         });
         super.updateLocation(location);
+    }
+
+    private void saveTMapAttribute() {
+        Log.i(LOG_TAG, "onSaveInstanceState : searchAddress");
+        mTMapViewAttr = new TMapViewAttr();
+        mTMapViewAttr.setZoomLevel(mTMapView.getZoomLevel());
+        mTMapViewAttr.setLocateLat(mTMapView.getLocationPoint().getLatitude());
+        mTMapViewAttr.setLocateLng(mTMapView.getLocationPoint().getLongitude());
+        Log.i(LOG_TAG, "mTMapViewATTR: " + mTMapViewAttr.toString());
     }
 
     private void setScreenSizeFull() {
@@ -124,6 +145,10 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
 
         initializeTMap();
 
+        if (mSearchAddress.getName() != null) {
+            loadDestinationInfo();
+        }
+
         mActivityHelper.setEventCallback(new MapActivityHelper.EventCallback() {
             @Override
             public void onBeforeSearchLayoutClick() {
@@ -132,6 +157,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
 
             @Override
             public void onSearchResultClick() {
+
                 showSearchAddressDialog();
             }
 
@@ -173,13 +199,20 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
 
         mTMapView.setSKPMapApiKey(getString(R.string.t_map_api_key));
         mTMapView.setCenterPoint(curLng, curLat);
-        mTMapView.setLocationPoint(curLng, curLat);
         mTMapView.setLanguage(TMapView.LANGUAGE_KOREAN);
         mTMapView.setIconVisibility(true);
-        mTMapView.setZoomLevel(15);
         mTMapView.setMapType(TMapView.MAPTYPE_STANDARD);
         mTMapView.setCompassMode(false);
         mTMapView.setTrackingMode(true);
+
+        if (mTMapViewAttr != null) {
+            Log.i(LOG_TAG, "ATTR is not null: load Attr: ");
+            mTMapView.setLocationPoint(mTMapViewAttr.getLocateLng(), mTMapViewAttr.getLocateLat());
+            mTMapView.setZoomLevel(mTMapViewAttr.getZoomLevel());
+        } else {
+            mTMapView.setLocationPoint(curLng, curLat);
+            mTMapView.setZoomLevel(15);
+        }
 
         setRadiusCircle();
 
@@ -260,8 +293,8 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
         mTMapView.setCenterPoint(SettingManager.getInstance().getCurrentLongitude(), SettingManager.getInstance().getCurrentLatitude(), true);
     }
 
-    private void requestGoogleGeoCoding(String address) {
-        SearchAddress.getGeoCoding(MapActivity.this, address, new RestClient.RestListener() {
+    private void requestGeoCoding(SearchAddress address) {
+        SearchAddress.getTMapGeoCoding(MapActivity.this, address, new RestClient.RestListener() {
             @Override
             public void onBefore() {
                 showProgressDialog();
@@ -269,12 +302,12 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
 
             @Override
             public void onSuccess(Object response) {
+                dismissProgressDialog();
                 if (response instanceof LatLng) {
                     LatLng latLng = (LatLng) response;
                     mSearchAddress.setLatitude(latLng.latitude);
                     mSearchAddress.setLongitude(latLng.longitude);
                 }
-
                 loadDestinationInfo();
             }
 
@@ -293,6 +326,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
     }
 
     private void loadDestinationInfo() {
+        mTMapView.removeTMapPath();
         final double curLat = SettingManager.getInstance().getCurrentLatitude();
         final double curLng = SettingManager.getInstance().getCurrentLongitude();
         final double destLat = mSearchAddress.getLatitude();
@@ -302,11 +336,12 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
             @Override
             public void onBefore() {
 
+                showProgressDialog();
+
             }
 
             @Override
             public void onSuccess(Object response) {
-                dismissProgressDialog();
                 if (response instanceof JSONObject) {
                     JSONObject properties = (JSONObject) response;
                     try {
@@ -385,7 +420,7 @@ public class MapActivity extends TMapBaseActivity implements ChargeListDialogFra
                 }
             }
         });
-
+        dismissProgressDialog();
     }
 
 
