@@ -65,7 +65,7 @@
 
         <include
             android:id="@+id/footer"
-            layout="@layout/view_footer"/>
+            layout="@layout/view_footer_new"/>
 
     </FrameLayout>
 </layout>
