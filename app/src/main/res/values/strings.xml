@@ -50,7 +50,6 @@
     <string name="title_temp_humi_format">%1$s\u2103·%2$s%</string>
 
 
-
     <string name="title_minute">분</string>
     <string name="title_hour">시간</string>
 
@@ -63,4 +62,23 @@
     <string name="error_no_require_install_t_map">T-Map을 설치해주세요.</string>
     <string name="error_no_location_permission_not_granted">앱 위치서비스 접근에 동의하셔야합니다</string>
     <string name="error_no_cannot_found_t_map">T map이 설치되어있지 않습니다.</string>
+
+
+
+    <!--  DeviceListActivity -->
+    <string name="scanning">scanning for devices...</string>
+    <string name="select_device">select a device to connect</string>
+    <string name="none_paired">No devices have been paired</string>
+    <string name="none_found">No devices found</string>
+    <string name="title_paired_devices">Paired Devices</string>
+    <string name="title_other_devices">Other Available Devices</string>
+    <string name="button_scan">Scan for devices</string>
+
+    <!-- Options Menu -->
+    <string name="secure_connect">Connect a device - Secure</string>
+    <string name="insecure_connect">Connect a device - Insecure</string>
+    <string name="discoverable">Make discoverable</string>
+
+
+
 </resources>
