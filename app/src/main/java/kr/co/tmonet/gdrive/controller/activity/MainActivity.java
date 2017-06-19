@@ -3,12 +3,14 @@ package kr.co.tmonet.gdrive.controller.activity;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.controller.fragment.ChargeListDialogFragment;
 import kr.co.tmonet.gdrive.databinding.ActivityMainBinding;
 import kr.co.tmonet.gdrive.model.ChargeStation;
+import kr.co.tmonet.gdrive.utils.DataConvertUtils;
 
 public class MainActivity extends TMapBaseActivity implements ChargeListDialogFragment.OnFragmentInteractionListener {
 
@@ -21,6 +23,8 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
 
         setUpViews();
         setUpActions();
+
+        convertTest();
     }
 
     @Override
@@ -42,6 +46,15 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
 
     @Override
     public void onStationDialogCancelClick(boolean isWayPoint) {
+
+    }
+
+    private void convertTest() {
+        byte[] data1 = DataConvertUtils.convertAsciiToBytes("AT@USERINFO?");
+        Log.i("DATA : ", data1.toString());
+
+        String str = DataConvertUtils.convertBytesToAscii(data1);
+        Log.i("STR: ", str);
 
     }
 
