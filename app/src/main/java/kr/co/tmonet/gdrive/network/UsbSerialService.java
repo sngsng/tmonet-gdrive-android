@@ -13,6 +13,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.felhr.usbserial.CDCSerialDevice;
 import com.felhr.usbserial.UsbSerialDevice;
@@ -110,6 +111,8 @@ public class UsbSerialService extends Service {
                     mSerialPort.close();
                 }
                 mSerialPortConnected = false;
+            } else {
+                Log.i("receivedIntent: ", intent.getAction());
             }
         }
     };

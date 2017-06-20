@@ -23,8 +23,7 @@ public class DataConvertUtils {
         return new String(data);
     }
 
-
-    public static String convertAsciiToHex(String asciiStr) {
+    public String convertAsciiToHex(String asciiStr) {
         char[] chars = asciiStr.toCharArray();
         StringBuilder hex = new StringBuilder();
 
@@ -35,7 +34,7 @@ public class DataConvertUtils {
         return hex.toString();
     }
 
-    public static String convertHexToAscii(String hexStr) {
+    public String convertHexToAscii(String hexStr) {
         StringBuilder output = new StringBuilder("");
 
         for (int i = 0; i < hexStr.length(); i += 2) {

@@ -91,8 +91,8 @@ public class IntroActivity extends TMapBaseActivity {
             }
         });
 
-        setUpUsbSerialService();
-        setUpBluetoothService();
+//        setUpUsbSerialService();
+//        setUpBluetoothService();
 
     }
 

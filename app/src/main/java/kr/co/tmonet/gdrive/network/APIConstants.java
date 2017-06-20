@@ -82,4 +82,22 @@ public class APIConstants {
         public static final String LNBR_MNNM = "lnbrMnnm";
         public static final String LNBR_SLNO = "lnbrSlno";
     }
+
+    public static class Command {
+        public static final String CR = "<CR>";
+        public static final String AT = "AT";
+        public static final String SIGN_AT = "@";
+        public static final String SIGN_READ = "?";
+        public static final String SIGN_WRITE = "=";
+        public static final String USRINFO = "USRINFO";
+        public static final String PWOFF = "PWOFF";
+        public static final String CHARGER = "CHARGER";
+        public static final String TIME = "TIME";
+        public static final String GPS = "GPS";
+        public static final String CARINFO = "CARINFO";
+        public static final String EVENT = "EVENT";
+        public static final String OK = "OK";
+        public static final String NOTI = "NOTI";
+        public static final String ERROR = "ERROR";
+    }
 }
