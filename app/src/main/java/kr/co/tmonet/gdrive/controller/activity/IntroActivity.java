@@ -15,16 +15,20 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 
+import java.util.Locale;
 import java.util.Set;
 
 import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.databinding.ActivityIntroBinding;
 import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.manager.SettingManager;
+import kr.co.tmonet.gdrive.model.CarInfo;
 import kr.co.tmonet.gdrive.model.ChargeStation;
+import kr.co.tmonet.gdrive.model.UserInfo;
 import kr.co.tmonet.gdrive.network.BluetoothService;
 import kr.co.tmonet.gdrive.network.UsbSerialService;
 import kr.co.tmonet.gdrive.utils.DialogUtils;
+import kr.co.tmonet.gdrive.utils.ModelUtils;
 
 public class IntroActivity extends TMapBaseActivity {
 
@@ -149,7 +153,7 @@ public class IntroActivity extends TMapBaseActivity {
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                switch(msg.what) {
+                switch (msg.what) {
                     case UsbSerialService.MESSAGE_FROM_SERIAL_PORT:
                         String data = (String) msg.obj;
                         showToast("HANDLE MSG : " + (String) msg.obj);
@@ -160,11 +164,11 @@ public class IntroActivity extends TMapBaseActivity {
     }
 
     private void startUsbService(Class<?> service, ServiceConnection serviceConnection, Bundle extras) {
-        if(!UsbSerialService.SERVICE_CONNECTED) {
+        if (!UsbSerialService.SERVICE_CONNECTED) {
             Intent startUsbService = new Intent(this, service);
-            if(extras != null && !extras.isEmpty()) {
+            if (extras != null && !extras.isEmpty()) {
                 Set<String> keys = extras.keySet();
-                for(String key : keys) {
+                for (String key : keys) {
                     String extra = extras.getString(key);
                     startUsbService.putExtra(key, extra);
                 }
@@ -214,8 +218,71 @@ public class IntroActivity extends TMapBaseActivity {
     }
 
     private void setUpViews() {
-        // TODO Check isShareing state
-        // TODO if isShareing -> Fill data
+        updateFooterInfo();
+    }
+
+    private void updateFooterInfo() {
+        UserInfo userInfo = ModelManager.getInstance().getGlobalInfo().getUserInfo();
+        CarInfo carInfo = ModelManager.getInstance().getGlobalInfo().getCarInfo();
+
+        if (userInfo != null && carInfo != null) {
+
+            String remainStr = ModelUtils.getRemainServiceTime(userInfo.getEndAt());
+            if (remainStr != null) {
+                mBinding.footer.emptyStateLayout.setVisibility(View.VISIBLE);
+                mBinding.footer.shareingStateLayout.setVisibility(View.GONE);
+
+                mBinding.footer.remainTimeTextView.setText(remainStr);
+                mBinding.footer.startDateTextView.setText(ModelUtils.getDateFormat(userInfo.getStartAt()));
+                mBinding.footer.startTimeTextView.setText(ModelUtils.getTimeFormat(userInfo.getStartAt()));
+
+                mBinding.footer.endDateTextView.setText(ModelUtils.getDateFormat(userInfo.getEndAt()));
+                mBinding.footer.endTimeTextView.setText(ModelUtils.getTimeFormat(userInfo.getEndAt()));
+
+            } else {
+                mBinding.footer.emptyStateLayout.setVisibility(View.VISIBLE);
+                mBinding.footer.shareingStateLayout.setVisibility(View.GONE);
+            }
+
+            mBinding.footer.coTextView.setText(carInfo.getCO());
+            mBinding.footer.co2TextView.setText(carInfo.getCO2());
+            mBinding.footer.alcoholTextView.setText(carInfo.getVolatility());
+            mBinding.footer.tempHumiTextView.setText(String.format(Locale.KOREA, getString(R.string.title_temp_humi_format), String.valueOf(carInfo.getTemperature()), String.valueOf(carInfo.getHumidity())));
+            mBinding.footer.distanceTextView.setText(ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery()));
+
+        }
+
+//        (연결 1, 충전중 2, 오류 3, 미충전 0)
+        switch (carInfo.getChargeState()) {
+            case 0:     // 미충전
+                mBinding.footer.chargeStateTextView.setText("배터리");
+                if (carInfo.getRemainBettery() > 80) {
+                    mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_100));
+                } else if (carInfo.getRemainBettery() > 60) {
+                    mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_80));
+                } else if (carInfo.getRemainBettery() > 40) {
+                    mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_80));
+                } else if (carInfo.getRemainBettery() > 20) {
+                    mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_40));
+                } else if (carInfo.getRemainBettery() < 20) {
+                    mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_20));
+                }
+                break;
+            case 1:     // 연결
+                mBinding.footer.chargeStateTextView.setText("충전대기");
+                mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_standby_60_x_19));
+                break;
+            case 2:     // 충전중
+                mBinding.footer.chargeStateTextView.setText("충전중");
+                mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_charging_60_x_19));
+                break;
+            case 3:     // 오류
+                mBinding.footer.chargeStateTextView.setText("통신장애");
+                mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_disruption_60_x_19));
+                break;
+            default:
+                break;
+        }
     }
 
     private void setUpActions() {

@@ -47,7 +47,7 @@
     <string name="title_co2">CO2</string>
     <string name="title_alcohol">Alcohol</string>
     <string name="title_temp_humi">온·습도</string>
-    <string name="title_temp_humi_format">%1$s\u2103·%2$s%</string>
+    <string name="title_temp_humi_format">%1$s\u2103·%2$s%%</string>
 
 
     <string name="title_minute">분</string>

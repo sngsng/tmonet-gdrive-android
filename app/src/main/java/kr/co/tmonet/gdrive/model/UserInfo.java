@@ -3,6 +3,8 @@ package kr.co.tmonet.gdrive.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Date;
+
 /**
  * Created by Jessehj on 13/06/2017.
  */
@@ -12,8 +14,8 @@ public class UserInfo implements Parcelable {
     private static final String LOG_TAG = UserInfo.class.getSimpleName();
 
     private long mUseNum;       // 이용번호 20YYMMDDhhmmss (20170321000002)
-    private long mStartAt;      // 시작시간 YYMMDDhhmmss (170402120000)
-    private long mEndAt;        // 종료시간 YYMMDDhhmmss (170403120000)
+    private Date mStartAt;      // 시작시간 YYMMDDhhmmss
+    private Date mEndAt;        // 종료시간 YYMMDDhhmmss
     private double mReturnLat;  // 반납거점 위도 (mm.ssssssss)
     private double mReturnLng;  // 반납거점 경도 (mmm.ssssssss)
 
@@ -28,19 +30,19 @@ public class UserInfo implements Parcelable {
         mUseNum = useNum;
     }
 
-    public long getStartAt() {
+    public Date getStartAt() {
         return mStartAt;
     }
 
-    public void setStartAt(long startAt) {
+    public void setStartAt(Date startAt) {
         mStartAt = startAt;
     }
 
-    public long getEndAt() {
+    public Date getEndAt() {
         return mEndAt;
     }
 
-    public void setEndAt(long endAt) {
+    public void setEndAt(Date endAt) {
         mEndAt = endAt;
     }
 
@@ -60,7 +62,6 @@ public class UserInfo implements Parcelable {
         mReturnLng = returnLng;
     }
 
-    @Override
     public int describeContents() {
         return 0;
     }
@@ -68,16 +69,18 @@ public class UserInfo implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(this.mUseNum);
-        dest.writeLong(this.mStartAt);
-        dest.writeLong(this.mEndAt);
+        dest.writeLong(this.mStartAt != null ? this.mStartAt.getTime() : -1);
+        dest.writeLong(this.mEndAt != null ? this.mEndAt.getTime() : -1);
         dest.writeDouble(this.mReturnLat);
         dest.writeDouble(this.mReturnLng);
     }
 
     protected UserInfo(Parcel in) {
         this.mUseNum = in.readLong();
-        this.mStartAt = in.readLong();
-        this.mEndAt = in.readLong();
+        long tmpMStartAt = in.readLong();
+        this.mStartAt = tmpMStartAt == -1 ? null : new Date(tmpMStartAt);
+        long tmpMEndAt = in.readLong();
+        this.mEndAt = tmpMEndAt == -1 ? null : new Date(tmpMEndAt);
         this.mReturnLat = in.readDouble();
         this.mReturnLng = in.readDouble();
     }

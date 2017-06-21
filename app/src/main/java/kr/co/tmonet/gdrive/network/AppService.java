@@ -5,6 +5,7 @@ import android.app.AlarmManager;
 
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -110,9 +111,23 @@ public class AppService {
             String response = cmd.substring(11, cmd.length() - 4);
             if (response.contains(",")) {
                 String[] responseDatas = response.split(",");
+
                 userInfo.setUseNum(Long.parseLong(responseDatas[0]));
-                userInfo.setStartAt(Long.parseLong(responseDatas[1]));
-                userInfo.setEndAt(Long.parseLong(responseDatas[2]));
+
+                String startAt = responseDatas[1];
+                String endAt = responseDatas[2];
+
+                try {
+                    SimpleDateFormat formatter = new SimpleDateFormat("YYYYMMDDhhmmss", Locale.KOREA);
+                    Date startDate = formatter.parse(startAt);
+                    Date endDate = formatter.parse(endAt);
+
+                    userInfo.setStartAt(startDate);
+                    userInfo.setEndAt(endDate);
+
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
 
             ModelManager.getInstance().getGlobalInfo().setUserInfo(userInfo);

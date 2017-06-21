@@ -49,7 +49,7 @@
                 android:src="@drawable/ic_remain_time_54_x_43"/>
 
             <kr.co.tmonet.gdrive.view.NotoTextView
-                android:id="@+id/remain_text_view"
+                android:id="@+id/remain_time_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
