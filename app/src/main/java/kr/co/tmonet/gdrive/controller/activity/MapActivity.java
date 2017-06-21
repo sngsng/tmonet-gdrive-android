@@ -200,10 +200,11 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
             @Override
             public void onLinkTMapToFindPath() {
                 if (mSearchAddress != null) {
-                    if (Double.parseDouble(mSearchAddress.getDistance()) > 100.0) { // TODO if distance > Enable running distance (battery + footer info)
-                        showAddWayPointDialog();
-                    } else {
+                    if (mActivityHelper.isRunnable()) {
                         linkToTMap(null, mSearchAddress);
+
+                    } else {
+                        showAddWayPointDialog();
                     }
                 }
             }
@@ -408,7 +409,6 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
                         mSearchAddress.setDistance(distanceInKm);
                         mSearchAddress.setLeadTime(timeWithFormat);
 
-                        // TODO get expect consume, remain battery data to fill in SearchResultLayout
                         mActivityHelper.fillSearchReslut(mSearchAddress);
 
                         findDestinationPath(curLat, curLng, destLat, destLng);
@@ -434,9 +434,8 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
     }
 
     private void showAddWayPointDialog() {
-        // TODO 예상 주행 가능 거리 계산???
         if (mAlertDialogFragment == null) {
-            mAlertDialogFragment = AlertDialogFragment.newInstance(mSearchAddress.getDistance(), "18");
+            mAlertDialogFragment = AlertDialogFragment.newInstance(mSearchAddress.getDistance(), mBinding.search.distanceTextView.getText().toString());
         }
         mAlertDialogFragment.show(getSupportFragmentManager(), AlertDialogFragment.class.getSimpleName());
     }

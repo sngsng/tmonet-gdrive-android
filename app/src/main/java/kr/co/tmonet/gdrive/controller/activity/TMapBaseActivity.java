@@ -38,7 +38,7 @@ import static android.os.Build.VERSION_CODES.M;
  * Created by Jessehj on 07/06/2017.
  */
 
-public class TMapBaseActivity extends BaseActivity {
+public class TMapBaseActivity extends ConnectBaseActivity {
 
     private static final String LOG_TAG = TMapBaseActivity.class.getSimpleName();
     public static final int REQ_LOCATION_PERMISSION = 0;

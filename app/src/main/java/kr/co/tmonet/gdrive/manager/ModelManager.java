@@ -2,8 +2,10 @@ package kr.co.tmonet.gdrive.manager;
 
 import java.util.ArrayList;
 
+import kr.co.tmonet.gdrive.model.CarInfo;
 import kr.co.tmonet.gdrive.model.ChargeStation;
 import kr.co.tmonet.gdrive.model.GlobalInfo;
+import kr.co.tmonet.gdrive.model.UserInfo;
 
 /**
  * Created by Jessehj on 07/06/2017.
@@ -36,5 +38,16 @@ public class ModelManager {
 
     public void setGlobalInfo(GlobalInfo globalInfo) {
         mGlobalInfo = globalInfo;
+    }
+
+    public void updateGlobalInfo(Object object) {
+        if (object instanceof UserInfo) {
+            UserInfo userInfo = (UserInfo) object;
+            mGlobalInfo.setUserInfo(userInfo);
+        } else if (object instanceof CarInfo) {
+            CarInfo carInfo = (CarInfo) object;
+            mGlobalInfo.setCarInfo(carInfo);
+        }
+        setGlobalInfo(mGlobalInfo);
     }
 }

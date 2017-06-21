@@ -10,7 +10,7 @@
     <string name="title_msg_turn_on_gps">기기의 GPS설정이 꺼져있습니다.\n설정화면으로 이동하시겠습니까?</string>
     <string name="title_msg_press_back_again_to_exit">한번 더 누르면 앱이 종료됩니다.</string>
     <string name="title_msg_empty_result">검색결과가 없습니다.\n주소를 다시한번 확인해 주세요.</string>
-    <string name="title_msg_ask_add_way_point_format">목적지(%1$skm)까지 예상 주행 가능 거리(%2$skm)로 갈 경우\n방전의 위험이 있습니다. 충전소 경유지를 탐색하시겠습니까?\n취소 시 기존 경로대로 안내합니다.</string>
+    <string name="title_msg_ask_add_way_point_format">목적지(%1$skm)까지 예상 주행 가능 거리(%2$s)로 갈 경우\n방전의 위험이 있습니다. 충전소 경유지를 탐색하시겠습니까?\n취소 시 기존 경로대로 안내합니다.</string>
 
     <string name="title_retry">다시시도</string>
     <string name="title_submit">확인</string>

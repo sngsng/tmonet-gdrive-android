@@ -51,6 +51,52 @@ public class AppService {
         }
     }
 
+    public void requestEventCommand(int eventCode, JSONObject params) {
+        String requestCmd = "";
+        switch (eventCode) {
+            case 1:     // 이용정보 조회
+                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
+
+                if (mCallback != null) {
+                    mCallback.onRequestNewCommand(requestCmd);
+                }
+                break;
+            case 2:     // 충전소 조회
+                double lat = SettingManager.getInstance().getCurrentLatitude();
+                double lng = SettingManager.getInstance().getCurrentLongitude();
+                requestCmd = Command.EVENT + ":" + eventCode
+                        + "," + lat + "," + lng + Command.CR;
+
+                if (mCallback != null) {
+                    mCallback.onRequestNewCommand(requestCmd);
+                }
+
+                break;
+            case 3:     // 현재시간 요청
+                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
+                if (mCallback != null) {
+                    mCallback.onRequestNewCommand(requestCmd);
+                }
+
+                break;
+            case 4:     // GPS 좌표 조회
+                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
+
+                if (mCallback != null) {
+                    mCallback.onRequestNewCommand(requestCmd);
+                }
+                break;
+            case 5:     // 차량정보 요청
+                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
+                if (mCallback != null) {
+                    mCallback.onRequestNewCommand(requestCmd);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
     private void checkReadResponse(String responseCmd) {       // ?
         String requestCmd = "";
         if (responseCmd.contains(Command.USRINFO)) {
@@ -130,7 +176,7 @@ public class AppService {
                 }
             }
 
-            ModelManager.getInstance().getGlobalInfo().setUserInfo(userInfo);
+            ModelManager.getInstance().updateGlobalInfo(userInfo);
 
         } else if (cmd.contains(Command.PWOFF)) {
 
@@ -184,57 +230,10 @@ public class AppService {
                 carInfo.setHumidity(Double.parseDouble(responseDatas[9]));
             }
 
-            ModelManager.getInstance().getGlobalInfo().setCarInfo(carInfo);
-
+            ModelManager.getInstance().updateGlobalInfo(carInfo);
         }
 
         return returnOK();
-    }
-
-    private void requestEventCommand(int eventCode, JSONObject params) {
-        String requestCmd = "";
-        switch (eventCode) {
-            case 1:     // 이용정보 조회
-                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
-
-                if (mCallback != null) {
-                    mCallback.onRequestNewCommand(requestCmd);
-                }
-                break;
-            case 2:     // 충전소 조회
-                double lat = SettingManager.getInstance().getCurrentLatitude();
-                double lng = SettingManager.getInstance().getCurrentLongitude();
-                requestCmd = Command.EVENT + ":" + eventCode
-                        + "," + lat + "," + lng + Command.CR;
-
-                if (mCallback != null) {
-                    mCallback.onRequestNewCommand(requestCmd);
-                }
-
-                break;
-            case 3:     // 현재시간 요청
-                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
-                if (mCallback != null) {
-                    mCallback.onRequestNewCommand(requestCmd);
-                }
-
-                break;
-            case 4:     // GPS 좌표 조회
-                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
-
-                if (mCallback != null) {
-                    mCallback.onRequestNewCommand(requestCmd);
-                }
-                break;
-            case 5:     // 차량정보 요청
-                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
-                if (mCallback != null) {
-                    mCallback.onRequestNewCommand(requestCmd);
-                }
-                break;
-            default:
-                break;
-        }
     }
 
     private byte[] carriageReturn() {

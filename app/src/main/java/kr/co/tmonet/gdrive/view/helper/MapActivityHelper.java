@@ -9,6 +9,7 @@ import java.util.Locale;
 
 import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.databinding.ActivityMapBinding;
+import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.model.SearchAddress;
 
 /**
@@ -19,6 +20,7 @@ public class MapActivityHelper extends ViewHelper implements View.OnClickListene
 
     private ActivityMapBinding mBinding;
     private EventCallback mEventCallback;
+    private boolean mIsRunnable = true;
 
     public MapActivityHelper(AppCompatActivity activity, ActivityMapBinding binding) {
         super(activity);
@@ -37,16 +39,35 @@ public class MapActivityHelper extends ViewHelper implements View.OnClickListene
         mBinding.search.searchResultTextView.setText("");
     }
 
+    public boolean isRunnable() {
+        return mIsRunnable;
+    }
+
     public void fillSearchReslut(SearchAddress address) {
+
+
         if (address != null) {
             mBinding.search.afterSearchLayout.setVisibility(View.VISIBLE);
             mBinding.search.beforeSearchLayout.setVisibility(View.GONE);
             mBinding.search.searchResultTextView.setText(address.getRoadAddress());
             mBinding.search.leadTimeTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_lead_time_format), address.getLeadTime()));
             mBinding.search.distanceTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_optimum_distance_format), address.getDistance()));
-            // TODO setText : consumeTextView, batteryTextView
-        }
 
+            if (ModelManager.getInstance().getGlobalInfo() != null) {
+                double consume = Double.parseDouble(address.getLeadTime()) / ModelManager.getInstance().getGlobalInfo().getCarInfo().getFuelEfficiency();
+                double consumePercent = consume / ModelManager.getInstance().getGlobalInfo().getCarInfo().getCarBettery() * 100;
+                double remainBatteryPercent = ModelManager.getInstance().getGlobalInfo().getCarInfo().getRemainBettery() - consumePercent;
+
+                mBinding.search.consumeTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_expect_consume_format), String.valueOf(consumePercent), String.valueOf(consume)));
+                if (remainBatteryPercent > 0) {
+                    mBinding.search.batteryTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_remain_battery_format), String.valueOf(remainBatteryPercent)));
+                    mIsRunnable = true;
+                } else {
+                    mBinding.search.batteryTextView.setText("-");
+                    mIsRunnable = false;
+                }
+            }
+        }
     }
 
     public void addTMapView(TMapView tMapView) {
