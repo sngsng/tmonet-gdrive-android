@@ -35,4 +35,6 @@
     <color name="colorLightishRed">#fc353f</color>
     <color name="colorGrapeFruit">#ff4f4f</color>
 
+
+    <color name="colorRedTest">#0fff0000</color>
 </resources>

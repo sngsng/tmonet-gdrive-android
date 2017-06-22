@@ -2,6 +2,8 @@ package kr.co.tmonet.gdrive.utils;
 
 import java.nio.charset.StandardCharsets;
 
+import kr.co.tmonet.gdrive.network.APIConstants.Command;
+
 /**
  * Created by Jessehj on 19/06/2017.
  */
@@ -18,23 +20,49 @@ public class DataConvertUtils {
         return data;
     }
 
-    public static String convertBytesToAscii(byte[] data) {
+    public static boolean veryfyCheckSum(String command) {
 
-        return new String(data);
+        String cmd = command.substring(0, command.indexOf(Command.SIGN_CHECKSUM_START));
+        String checkSum = (command.substring(command.indexOf(Command.SIGN_CHECKSUM_START) + 1, command.indexOf(Command.SIGN_CHECKSUM_END))).toUpperCase();
+
+        return calcCheckSum(cmd).equals(checkSum);
     }
 
-    public String convertAsciiToHex(String asciiStr) {
+    public static String calcCheckSum(String cmd) {
+        String hexString = convertAsciiToHex(cmd);
+        byte[] bytes = hexStringToByteArray(hexString);
+
+        int checkSum = 0;
+        for (byte b : bytes) {
+            checkSum += (0xFF & b);
+        }
+
+        return Integer.toHexString(checkSum & 0xFF).toUpperCase();
+    }
+
+    public static String convertAsciiToHex(String asciiStr) {
         char[] chars = asciiStr.toCharArray();
         StringBuilder hex = new StringBuilder();
 
         for (char ch : chars) {
-            hex.append("0x" + Integer.toHexString((int) ch));
+            hex.append(Integer.toHexString((int) ch));
         }
 
         return hex.toString();
     }
 
-    public String convertHexToAscii(String hexStr) {
+    private static byte[] hexStringToByteArray(String hexString) {
+        int len = hexString.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4) +
+                    Character.digit(hexString.charAt(i + 1), 16));
+
+        }
+        return data;
+    }
+
+    public static String convertHexToAscii(String hexStr) {
         StringBuilder output = new StringBuilder("");
 
         for (int i = 0; i < hexStr.length(); i += 2) {

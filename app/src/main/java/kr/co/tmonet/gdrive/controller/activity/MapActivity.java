@@ -29,7 +29,9 @@ import kr.co.tmonet.gdrive.controller.fragment.AlertDialogFragment;
 import kr.co.tmonet.gdrive.controller.fragment.ChargeListDialogFragment;
 import kr.co.tmonet.gdrive.controller.fragment.SearchAddressDialogFragment;
 import kr.co.tmonet.gdrive.databinding.ActivityMapBinding;
+import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.manager.SettingManager;
+import kr.co.tmonet.gdrive.model.CarInfo;
 import kr.co.tmonet.gdrive.model.ChargeStation;
 import kr.co.tmonet.gdrive.model.SearchAddress;
 import kr.co.tmonet.gdrive.model.TMapViewAttr;
@@ -259,13 +261,13 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
         mTMapView.setOnClickListenerCallBack(new TMapView.OnClickListenerCallback() {
             @Override
             public boolean onPressEvent(ArrayList<TMapMarkerItem> arrayList, ArrayList<TMapPOIItem> arrayList1, TMapPoint tMapPoint, PointF pointF) {
-                mTMapView.setTrackingMode(false);
-                showToast("tracking off");
                 return false;
             }
 
             @Override
             public boolean onPressUpEvent(ArrayList<TMapMarkerItem> arrayList, ArrayList<TMapPOIItem> arrayList1, TMapPoint tMapPoint, PointF pointF) {
+                mTMapView.setTrackingMode(false);
+                showToast("tracking off");
                 return false;
             }
         });
@@ -282,27 +284,38 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
         circleS.setAreaColor(0x00ff23);
         circleS.setAreaAlpha(38);
         circleS.setLineColor(0x00ff23);
-        circleS.setRadius(1000.0);   // 미터
         circleS.setRadiusVisible(true);
 
         circleM.setCenterPoint(mTMapView.getLocationPoint());
         circleM.setAreaColor(0xffff00);
-        circleM.setAreaAlpha(38);
+        circleM.setAreaAlpha(50);
         circleM.setLineColor(0xffff00);
-        circleM.setRadius(2000.0);   // 미터
         circleM.setRadiusVisible(true);
 
         circleL.setCenterPoint(mTMapView.getLocationPoint());
         circleL.setAreaColor(0xff0000);
-        circleL.setAreaAlpha(38);
+        circleL.setAreaAlpha(15);
         circleL.setLineColor(0xff0000);
-        circleL.setRadius(3000.0);   // 미터
         circleL.setRadiusVisible(true);
+
+        if (ModelManager.getInstance().getGlobalInfo() != null) {
+            CarInfo carInfo = ModelManager.getInstance().getGlobalInfo().getCarInfo();
+            if (carInfo != null) {
+                double runnableDistance = ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery()) * 1000;
+
+                circleS.setRadius(runnableDistance * 0.7);   // 미터
+                circleM.setRadius(runnableDistance * 0.9);   // 미터
+                circleL.setRadius(runnableDistance);   // 미터
+            }
+        } else {
+            circleS.setRadius(100000 * 0.7);   // 미터
+            circleM.setRadius(100000 * 0.9);   // 미터
+            circleL.setRadius(100000);   // 미터
+        }
 
         mTMapView.addTMapCircle("cId1", circleS);
         mTMapView.addTMapCircle("cId2", circleM);
         mTMapView.addTMapCircle("cId3", circleL);
-
     }
 
 
@@ -322,7 +335,6 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
             item.setEnableClustering(true);
 
             mTMapView.addMarkerItem(station.getId().toString(), item);
-            mTMapView.setEnableClustering(true);
             mMarkerIds.add(station.getId().toString());
 
         }

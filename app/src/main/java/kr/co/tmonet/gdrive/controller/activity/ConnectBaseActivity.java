@@ -1,5 +1,6 @@
 package kr.co.tmonet.gdrive.controller.activity;
 
+import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -11,14 +12,18 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 
+import java.util.Calendar;
 import java.util.Set;
 
 import kr.co.tmonet.gdrive.R;
+import kr.co.tmonet.gdrive.network.AppService;
 import kr.co.tmonet.gdrive.network.BluetoothService;
 import kr.co.tmonet.gdrive.network.UsbSerialService;
+import kr.co.tmonet.gdrive.utils.DataConvertUtils;
 import kr.co.tmonet.gdrive.utils.DialogUtils;
 
 /**
@@ -35,6 +40,7 @@ public class ConnectBaseActivity extends BaseActivity {
     private BluetoothService mBtService;
     private UsbSerialService mUsbService;
     private Handler mHandler;
+    private AppService mAppService = new AppService(this);
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
@@ -123,13 +129,42 @@ public class ConnectBaseActivity extends BaseActivity {
     }
 
     private void setUpUsbSerialService() {
+
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case UsbSerialService.MESSAGE_FROM_SERIAL_PORT:
                         String data = (String) msg.obj;
-                        showToast("HANDLE MSG : " + (String) msg.obj);
+
+                        mAppService.setCallback(new AppService.ResponseCallback() {
+                            @Override
+                            public void onRequestNewCommand(String requestCmd) {
+                                byte[] requestData = DataConvertUtils.convertAsciiToBytes(requestCmd);
+                                mUsbService.write(requestData);
+                                mUsbService.write(mAppService.returnOK());
+                            }
+
+                            @Override
+                            public void onPowerOff() {
+                                ActivityCompat.finishAffinity(ConnectBaseActivity.this);
+                                System.runFinalizersOnExit(true);
+                                System.exit(0);
+                            }
+
+                            @Override
+                            public void onSynchronizeTime(Calendar calendar) {
+                                AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+                                am.setTime(calendar.getTimeInMillis());
+                            }
+
+                            @Override
+                            public void returnOK() {
+                                mUsbService.write(mAppService.returnOK());
+                            }
+                        });
+
+                        mAppService.checkResponseCommand(data);
                         break;
                 }
             }

@@ -94,8 +94,9 @@ public class IntroActivity extends TMapBaseActivity {
                 mBinding.footer.alcoholTextView.setText(carInfo.getVolatility());
                 mBinding.footer.tempHumiTextView.setText(String.format(Locale.KOREA, getString(R.string.title_temp_humi_format), String.valueOf(carInfo.getTemperature()), String.valueOf(carInfo.getHumidity())));
 
-                mBinding.footer.distanceTextView.setText(ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery()));
+                double runnableDistance = ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery());
 
+                mBinding.footer.distanceTextView.setText(String.format(Locale.KOREA, getString(R.string.title_distance_format), String.valueOf(runnableDistance)));
             }
 
 //        (연결 1, 충전중 2, 오류 3, 미충전 0)

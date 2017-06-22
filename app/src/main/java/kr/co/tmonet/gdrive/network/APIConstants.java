@@ -89,15 +89,38 @@ public class APIConstants {
         public static final String SIGN_AT = "@";
         public static final String SIGN_READ = "?";
         public static final String SIGN_WRITE = "=";
-        public static final String USRINFO = "USRINFO";
+
+        public static final String SIGN_CHECKSUM_START = "*";
+        public static final String SIGN_CHECKSUM_END = "<";
+
         public static final String PWOFF = "PWOFF";
         public static final String CHARGER = "CHARGER";
+
         public static final String TIME = "TIME";
+        public static final String TIME_READ = "@TIME=";
+
         public static final String GPS = "GPS";
+        public static final String GPS_READ = "@GPS=";
+
         public static final String CARINFO = "CARINFO";
+
         public static final String EVENT = "EVENT";
+        public static final String EVENT1 = "EVENT:1";
+        public static final String EVENT2 = "EVENT:2";
+        public static final String EVENT3 = "EVENT:3";
+        public static final String EVENT4 = "EVENT:4";
+        public static final String EVENT5 = "EVENT:5";
+
+        public static final String USRINFO = "USRINFO";
+        public static final String USRINFO_READ = "@USRINFO=";
+
         public static final String OK = "OK";
+
         public static final String NOTI = "NOTI";
+        public static final String NOTI0 = "NOTI:0";
+        public static final String NOTI1 = "NOTI:1";
+
+
         public static final String ERROR = "ERROR";
     }
 }

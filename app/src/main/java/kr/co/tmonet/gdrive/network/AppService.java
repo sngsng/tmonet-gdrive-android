@@ -1,7 +1,6 @@
 package kr.co.tmonet.gdrive.network;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 
 import org.json.JSONObject;
 
@@ -18,7 +17,9 @@ import kr.co.tmonet.gdrive.model.ChargeStation;
 import kr.co.tmonet.gdrive.model.UserInfo;
 import kr.co.tmonet.gdrive.network.APIConstants.Command;
 
+import static kr.co.tmonet.gdrive.utils.DataConvertUtils.calcCheckSum;
 import static kr.co.tmonet.gdrive.utils.DataConvertUtils.convertAsciiToBytes;
+import static kr.co.tmonet.gdrive.utils.DataConvertUtils.veryfyCheckSum;
 
 /**
  * Created by Jessehj on 20/06/2017.
@@ -31,6 +32,9 @@ public class AppService {
     private Activity mActivity;
     private ResponseCallback mCallback;
 
+    public AppService() {
+    }
+
     public AppService(Activity activity) {
         mActivity = activity;
     }
@@ -41,13 +45,17 @@ public class AppService {
 
     public void checkResponseCommand(String cmd) {
 
-        if (cmd.contains(Command.SIGN_READ)) {
-            // READ ?
-            checkReadResponse(cmd);
+        if (veryfyCheckSum(cmd)) {
+            if (cmd.contains(Command.SIGN_READ)) {
+                // READ ?
+                checkReadResponse(cmd);
 
-        } else if (cmd.contains(Command.SIGN_WRITE)) {
-            // WRITE =
-            checkWriteCommand(cmd);
+            } else if (cmd.contains(Command.SIGN_WRITE)) {
+                // WRITE =
+                checkWriteCommand(cmd);
+            }
+        } else {
+            // TODO CHECKSUM ERROR
         }
     }
 
@@ -55,7 +63,7 @@ public class AppService {
         String requestCmd = "";
         switch (eventCode) {
             case 1:     // 이용정보 조회
-                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
+                requestCmd = Command.EVENT1 + Command.CR;
 
                 if (mCallback != null) {
                     mCallback.onRequestNewCommand(requestCmd);
@@ -64,8 +72,7 @@ public class AppService {
             case 2:     // 충전소 조회
                 double lat = SettingManager.getInstance().getCurrentLatitude();
                 double lng = SettingManager.getInstance().getCurrentLongitude();
-                requestCmd = Command.EVENT + ":" + eventCode
-                        + "," + lat + "," + lng + Command.CR;
+                requestCmd = Command.EVENT2 + "," + lat + "," + lng + Command.CR;
 
                 if (mCallback != null) {
                     mCallback.onRequestNewCommand(requestCmd);
@@ -73,21 +80,21 @@ public class AppService {
 
                 break;
             case 3:     // 현재시간 요청
-                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
+                requestCmd = Command.EVENT3 + Command.CR;
                 if (mCallback != null) {
                     mCallback.onRequestNewCommand(requestCmd);
                 }
 
                 break;
             case 4:     // GPS 좌표 조회
-                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
+                requestCmd = Command.EVENT4 + Command.CR;
 
                 if (mCallback != null) {
                     mCallback.onRequestNewCommand(requestCmd);
                 }
                 break;
             case 5:     // 차량정보 요청
-                requestCmd = Command.EVENT + ":" + eventCode + Command.CR;
+                requestCmd = Command.EVENT5 + Command.CR;
                 if (mCallback != null) {
                     mCallback.onRequestNewCommand(requestCmd);
                 }
@@ -97,18 +104,37 @@ public class AppService {
         }
     }
 
+    public void requestNotify(int notiCode) {
+        String requestCmd = "";
+
+        switch (notiCode) {
+            case 0:
+                requestCmd = Command.NOTI0 + Command.CR;
+                break;
+            case 1:
+                requestCmd = Command.NOTI1 + Command.CR;
+                break;
+            default:
+                break;
+        }
+
+        if (mCallback != null) {
+            mCallback.onRequestNewCommand(requestCmd);
+        }
+    }
+
     private void checkReadResponse(String responseCmd) {       // ?
         String requestCmd = "";
         if (responseCmd.contains(Command.USRINFO)) {
             UserInfo userInfo = ModelManager.getInstance().getGlobalInfo().getUserInfo();
 
             if (userInfo != null) {
-                requestCmd = Command.SIGN_AT + Command.USRINFO + Command.SIGN_WRITE
-                        + userInfo.getUseNum() + "," + userInfo.getStartAt() + "," + userInfo.getEndAt() + Command.CR;
+                requestCmd = Command.USRINFO_READ + userInfo.getUseNum() + "," + userInfo.getStartAt() + "," + userInfo.getEndAt();
             } else {
-                requestCmd = Command.SIGN_AT + Command.USRINFO + Command.SIGN_WRITE
-                        + "0, 0, 0" + Command.CR;
+                requestCmd = Command.USRINFO_READ + "0,0,0";
             }
+
+            requestCmd += Command.SIGN_CHECKSUM_START + calcCheckSum(requestCmd) + Command.CR;
 
             if (mCallback != null) {
                 mCallback.onRequestNewCommand(requestCmd);
@@ -127,8 +153,9 @@ public class AppService {
             Date curTime = new Date();
             String formattedTime = formatter.format(curTime);
 
-            requestCmd = Command.SIGN_AT + Command.TIME + Command.SIGN_WRITE
-                    + formattedTime + Command.CR;
+            requestCmd = Command.TIME_READ + formattedTime;
+            requestCmd += calcCheckSum(requestCmd) + Command.CR;
+
 
             if (mCallback != null) {
                 mCallback.onRequestNewCommand(requestCmd);
@@ -138,8 +165,8 @@ public class AppService {
             double lat = SettingManager.getInstance().getCurrentLatitude();
             double lng = SettingManager.getInstance().getCurrentLongitude();
 
-            requestCmd = Command.SIGN_AT + Command.GPS + Command.SIGN_WRITE
-                    + lat + "," + lng + Command.CR;
+            requestCmd = Command.GPS_READ + lat + "," + lng;
+            requestCmd += calcCheckSum(requestCmd) + Command.CR;
 
             if (mCallback != null) {
                 mCallback.onRequestNewCommand(requestCmd);
@@ -150,7 +177,7 @@ public class AppService {
         }
     }
 
-    private byte[] checkWriteCommand(String cmd) {      // =
+    private void checkWriteCommand(String cmd) {      // =
         if (cmd.contains(Command.USRINFO)) {
             UserInfo userInfo = new UserInfo();
 
@@ -191,7 +218,6 @@ public class AppService {
                     chargeStation.setName(responseDatas[0]);
                     chargeStation.setLatitude(Double.parseDouble(responseDatas[1]));
                     chargeStation.setLongitude(Double.parseDouble(responseDatas[2]));
-
                 }
             }
 
@@ -206,8 +232,10 @@ public class AppService {
 
             Calendar calendar = Calendar.getInstance();
             calendar.set(year, month - 1, date, hour, min, sec);
-            AlarmManager am = (AlarmManager) mActivity.getSystemService(mActivity.ALARM_SERVICE);
-            am.setTime(calendar.getTimeInMillis());
+
+            if (mCallback != null) {
+                mCallback.onSynchronizeTime(calendar);
+            }
 
         } else if (cmd.contains(Command.GPS)) {
 
@@ -233,20 +261,26 @@ public class AppService {
             ModelManager.getInstance().updateGlobalInfo(carInfo);
         }
 
-        return returnOK();
+        if (mCallback != null) {
+            mCallback.returnOK();
+        }
     }
 
     private byte[] carriageReturn() {
         return convertAsciiToBytes(Command.CR);
     }
 
-    private byte[] returnOK() {
-        return convertAsciiToBytes(Command.OK);
+    public byte[] returnOK() {
+        return convertAsciiToBytes(Command.OK + Command.CR);
     }
 
     public interface ResponseCallback {
         void onRequestNewCommand(String requestCmd);
 
         void onPowerOff();
+
+        void onSynchronizeTime(Calendar calendar);
+
+        void returnOK();
     }
 }

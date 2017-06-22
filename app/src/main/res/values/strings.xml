@@ -26,6 +26,7 @@
     <string name="title_charge_info">전기차 충전소 안내</string>
     <string name="title_charge_name">충전소 위치 명</string>
     <string name="title_distance">거리</string>
+    <string name="title_distance_format">%1$skm</string>
     <string name="title_charge_status">충전 가능 여부</string>
     <string name="title_o">O</string>
     <string name="title_x">X</string>

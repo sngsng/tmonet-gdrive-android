@@ -82,11 +82,11 @@ public class ModelUtils {
         return formatter.format(date);
     }
 
-    public static String getRunnableDistance(double fuelEfficiency, double carBettery, double remainPercent) {
+    public static double getRunnableDistance(double fuelEfficiency, double carBettery, double remainPercent) {
 
         double remainBetterySize = carBettery * remainPercent * (1 / 100);
         double runnableDistance = fuelEfficiency * remainBetterySize;
 
-        return String.valueOf(runnableDistance);
+        return runnableDistance;
     }
 }

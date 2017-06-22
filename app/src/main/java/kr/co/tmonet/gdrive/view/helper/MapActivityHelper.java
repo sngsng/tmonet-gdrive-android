@@ -10,7 +10,9 @@ import java.util.Locale;
 import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.databinding.ActivityMapBinding;
 import kr.co.tmonet.gdrive.manager.ModelManager;
+import kr.co.tmonet.gdrive.model.CarInfo;
 import kr.co.tmonet.gdrive.model.SearchAddress;
+import kr.co.tmonet.gdrive.utils.ModelUtils;
 
 /**
  * Created by Jessehj on 09/06/2017.
@@ -61,10 +63,19 @@ public class MapActivityHelper extends ViewHelper implements View.OnClickListene
                 mBinding.search.consumeTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_expect_consume_format), String.valueOf(consumePercent), String.valueOf(consume)));
                 if (remainBatteryPercent > 0) {
                     mBinding.search.batteryTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_remain_battery_format), String.valueOf(remainBatteryPercent)));
-                    mIsRunnable = true;
                 } else {
                     mBinding.search.batteryTextView.setText("-");
-                    mIsRunnable = false;
+                }
+
+                CarInfo carInfo = ModelManager.getInstance().getGlobalInfo().getCarInfo();
+                if (carInfo != null) {
+                    double runnableDistance = ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery());
+
+                    if (runnableDistance + 20.0 < Double.parseDouble(address.getDistance())) {
+                        mIsRunnable = false;
+                    } else {
+                        mIsRunnable = true;
+                    }
                 }
             }
         }
