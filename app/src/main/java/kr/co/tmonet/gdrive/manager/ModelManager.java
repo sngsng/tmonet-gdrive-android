@@ -20,7 +20,7 @@ public class ModelManager {
         return sModelManager;
     }
 
-    private GlobalInfo mGlobalInfo;
+    private GlobalInfo mGlobalInfo = new GlobalInfo();
 
     private ArrayList<ChargeStation> mChargeStationList = new ArrayList<>();
 

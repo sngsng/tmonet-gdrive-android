@@ -1,6 +1,7 @@
 package kr.co.tmonet.gdrive.network;
 
 import android.app.Activity;
+import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -19,7 +20,6 @@ import kr.co.tmonet.gdrive.network.APIConstants.Command;
 
 import static kr.co.tmonet.gdrive.utils.DataConvertUtils.calcCheckSum;
 import static kr.co.tmonet.gdrive.utils.DataConvertUtils.convertAsciiToBytes;
-import static kr.co.tmonet.gdrive.utils.DataConvertUtils.veryfyCheckSum;
 
 /**
  * Created by Jessehj on 20/06/2017.
@@ -31,6 +31,13 @@ public class AppService {
 
     private Activity mActivity;
     private ResponseCallback mCallback;
+    private RequestCallback mReqCallback;
+    private ActionType mActionType;
+
+    public enum ActionType {
+        CarInfo,
+        UsrInfo
+    }
 
     public AppService() {
     }
@@ -43,23 +50,28 @@ public class AppService {
         mCallback = callback;
     }
 
-    public void checkResponseCommand(String cmd) {
-
-        if (veryfyCheckSum(cmd)) {
-            if (cmd.contains(Command.SIGN_READ)) {
-                // READ ?
-                checkReadResponse(cmd);
-
-            } else if (cmd.contains(Command.SIGN_WRITE)) {
-                // WRITE =
-                checkWriteCommand(cmd);
-            }
-        } else {
-            // TODO CHECKSUM ERROR
-        }
+    public void setReqCallback(RequestCallback reqCallback) {
+        mReqCallback = reqCallback;
     }
 
-    public void requestEventCommand(int eventCode, JSONObject params) {
+    public void checkResponseCommand(String cmd) {
+        Log.i(LOG_TAG, "cmd : + " + cmd);
+        if (cmd.contains(Command.SIGN_READ)) {
+            // READ ?
+            Log.i(LOG_TAG, "read!!!");
+            checkReadResponse(cmd);
+
+        } else if (cmd.contains(Command.SIGN_WRITE)) {
+            // WRITE =
+            Log.i(LOG_TAG, "write!!!");
+            checkWriteCommand(cmd);
+        }
+
+
+    }
+
+    public void requestEventCommand(int eventCode, JSONObject params, RequestCallback reqCallback) {
+        Log.i(LOG_TAG, "reqEvent: " + eventCode);
         String requestCmd = "";
         switch (eventCode) {
             case 1:     // 이용정보 조회
@@ -73,10 +85,11 @@ public class AppService {
                 double lat = SettingManager.getInstance().getCurrentLatitude();
                 double lng = SettingManager.getInstance().getCurrentLongitude();
                 requestCmd = Command.EVENT2 + "," + lat + "," + lng + Command.CR;
+                Log.i(LOG_TAG, "reqCmd: " + requestCmd);
 
-                if (mCallback != null) {
-                    mCallback.onRequestNewCommand(requestCmd);
-                }
+
+                reqCallback.onRequestNewCommand(requestCmd);
+
 
                 break;
             case 3:     // 현재시간 요청
@@ -148,6 +161,8 @@ public class AppService {
 
         } else if (responseCmd.contains(Command.CHARGER)) {
 
+
+
         } else if (responseCmd.contains(Command.TIME)) {
             SimpleDateFormat formatter = new SimpleDateFormat("YYYYMMDDhhmmss", Locale.KOREA);
             Date curTime = new Date();
@@ -162,11 +177,13 @@ public class AppService {
             }
 
         } else if (responseCmd.contains(Command.GPS)) {
+            Log.i(LOG_TAG, " READ GPS");
             double lat = SettingManager.getInstance().getCurrentLatitude();
             double lng = SettingManager.getInstance().getCurrentLongitude();
 
-            requestCmd = Command.GPS_READ + lat + "," + lng;
-            requestCmd += calcCheckSum(requestCmd) + Command.CR;
+            requestCmd = Command.GPS_READ + lat + "," + lng + Command.CR;
+//            requestCmd += calcCheckSum(requestCmd) + Command.CR;
+            Log.i(LOG_TAG, "requestCmd(GPS) : " + requestCmd);
 
             if (mCallback != null) {
                 mCallback.onRequestNewCommand(requestCmd);
@@ -179,6 +196,7 @@ public class AppService {
 
     private void checkWriteCommand(String cmd) {      // =
         if (cmd.contains(Command.USRINFO)) {
+            Log.i(LOG_TAG, "if write user??!!!");
             UserInfo userInfo = new UserInfo();
 
             String response = cmd.substring(11, cmd.length() - 4);
@@ -204,6 +222,7 @@ public class AppService {
             }
 
             ModelManager.getInstance().updateGlobalInfo(userInfo);
+            mActionType = ActionType.UsrInfo;
 
         } else if (cmd.contains(Command.PWOFF)) {
 
@@ -240,9 +259,23 @@ public class AppService {
         } else if (cmd.contains(Command.GPS)) {
 
         } else if (cmd.contains(Command.CARINFO)) {
+            Log.i(LOG_TAG, "if write carinfo??!!!");
             CarInfo carInfo = new CarInfo();
 
-            String response = cmd.substring(11, cmd.length() - 4);
+
+            String response;
+            if (cmd.contains("\r"))
+                response = cmd.substring(11, cmd.length() - 1);
+            else if (cmd.contains("E")) {
+                int index = cmd.indexOf("E");
+                Log.i(LOG_TAG, "index: " + index);
+                response = cmd.substring(11, cmd.indexOf("E"));
+            } else {
+                response = cmd.substring(11);
+            }
+
+            Log.i(LOG_TAG, "responseStr : " + response);
+
 
             if (response.contains(",")) {
                 String[] responseDatas = response.split(",");
@@ -259,10 +292,12 @@ public class AppService {
             }
 
             ModelManager.getInstance().updateGlobalInfo(carInfo);
+            mActionType = ActionType.CarInfo;
         }
 
         if (mCallback != null) {
-            mCallback.returnOK();
+            Log.i(LOG_TAG, "returnok " + mActionType);
+            mCallback.returnOK(mActionType);
         }
     }
 
@@ -270,8 +305,9 @@ public class AppService {
         return convertAsciiToBytes(Command.CR);
     }
 
-    public byte[] returnOK() {
-        return convertAsciiToBytes(Command.OK + Command.CR);
+    public String returnOK() {
+        return (Command.OK + Command.CR);
+//        return convertAsciiToBytes(Command.OK + Command.CR);
     }
 
     public interface ResponseCallback {
@@ -281,6 +317,10 @@ public class AppService {
 
         void onSynchronizeTime(Calendar calendar);
 
-        void returnOK();
+        void returnOK(ActionType actionType);
+    }
+
+    public interface RequestCallback {
+        void onRequestNewCommand(String requestCmd);
     }
 }

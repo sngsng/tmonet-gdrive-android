@@ -176,7 +176,7 @@
                         android:id="@+id/co_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="220"
+                        android:text="-"
                         android:textColor="@color/colorWhite"
                         android:textSize="14sp"
                         app:fontStyle="medium"/>
@@ -202,7 +202,7 @@
                         android:id="@+id/co2_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="220"
+                        android:text="-"
                         android:textColor="@color/colorWhite"
                         android:textSize="14sp"
                         app:fontStyle="medium"/>
@@ -228,7 +228,7 @@
                         android:id="@+id/alcohol_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="220"
+                        android:text="-"
                         android:textColor="@color/colorWhite"
                         android:textSize="14sp"
                         app:fontStyle="medium"/>
@@ -254,7 +254,7 @@
                         android:id="@+id/temp_humi_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="27\u2103·55%"
+                        android:text="-"
                         android:textColor="@color/colorWhite"
                         android:textSize="14sp"
                         app:fontStyle="medium"/>
@@ -285,7 +285,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="충전중"
+                    android:text="연결대기"
                     android:textColor="@color/colorSkyBlue"
                     android:textSize="16sp"
                     app:fontStyle="medium"/>
@@ -294,7 +294,7 @@
                     android:id="@+id/charge_state_image_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_battery_standby_60_x_19"/>
+                    android:src="@drawable/ic_battery_disruption_60_x_19"/>
             </LinearLayout>
 
             <LinearLayout
@@ -317,7 +317,7 @@
                     android:id="@+id/distance_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="120km"
+                    android:text="-"
                     android:textColor="@color/colorWhite"
                     android:textSize="18sp"
                     app:fontStyle="bold"/>

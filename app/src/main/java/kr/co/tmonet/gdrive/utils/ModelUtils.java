@@ -84,7 +84,7 @@ public class ModelUtils {
 
     public static double getRunnableDistance(double fuelEfficiency, double carBettery, double remainPercent) {
 
-        double remainBetterySize = carBettery * remainPercent * (1 / 100);
+        double remainBetterySize = carBettery * remainPercent  / 100;
         double runnableDistance = fuelEfficiency * remainBetterySize;
 
         return runnableDistance;

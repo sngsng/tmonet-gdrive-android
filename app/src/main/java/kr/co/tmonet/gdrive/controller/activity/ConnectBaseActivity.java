@@ -1,5 +1,6 @@
 package kr.co.tmonet.gdrive.controller.activity;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -14,17 +15,14 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.view.View;
+import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Set;
 
-import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.network.AppService;
-import kr.co.tmonet.gdrive.network.BluetoothService;
-import kr.co.tmonet.gdrive.network.UsbSerialService;
-import kr.co.tmonet.gdrive.utils.DataConvertUtils;
-import kr.co.tmonet.gdrive.utils.DialogUtils;
+import kr.co.tmonet.gdrive.network.UsbService;
 
 /**
  * Created by Jessehj on 21/06/2017.
@@ -35,33 +33,35 @@ public class ConnectBaseActivity extends BaseActivity {
     private static final String LOG_TAG = ConnectBaseActivity.class.getSimpleName();
 
     public static final int REQ_CONNECT_DEVICE = 1;
-    public static final int REQ_ENABLE_BLUETOOTH = 2;
 
-    private BluetoothService mBtService;
-    private UsbSerialService mUsbService;
-    private Handler mHandler;
+    private UsbService mUsbService;
+    private MyHandler mHandler;
     private AppService mAppService = new AppService(this);
+
+    public ResultActionListener mResultActionListener;
+
+    public void setResultActionListener(ResultActionListener resultActionListener) {
+        mResultActionListener = resultActionListener;
+    }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
-                case UsbSerialService.ACTION_USB_PERMISSION_GRANTED:
-                    // USB PERMISSION GRANTED
-                    showToast("USB READY");
+                case UsbService.ACTION_USB_PERMISSION_GRANTED: // USB PERMISSION GRANTED
+                    Toast.makeText(context, "USB Ready", Toast.LENGTH_SHORT).show();
                     break;
-                case UsbSerialService.ACTION_USB_PERMISSION_NOT_GRANTED:
-                    // USB PERMISSION NOT GRANTED
-                    showToast("USB PERMISSION NOT GRANTED");
+                case UsbService.ACTION_USB_PERMISSION_NOT_GRANTED: // USB PERMISSION NOT GRANTED
+                    Toast.makeText(context, "USB Permission not granted", Toast.LENGTH_SHORT).show();
                     break;
-                case UsbSerialService.ACTION_USB_NONE:
-                    showToast("NO USB CONNECTED");
+                case UsbService.ACTION_NO_USB: // NO USB CONNECTED
+                    Toast.makeText(context, "No USB connected", Toast.LENGTH_SHORT).show();
                     break;
-                case UsbSerialService.ACTION_USB_DISCONNECTED:
-                    showToast("USB DISCONNECTED");
+                case UsbService.ACTION_USB_DISCONNECTED: // USB DISCONNECTED
+                    Toast.makeText(context, "USB disconnected", Toast.LENGTH_SHORT).show();
                     break;
-                case UsbSerialService.ACTION_USB_NOT_SUPPORTED:
-                    showToast("USB_DEVICE_NOT_SUPPORTED");
+                case UsbService.ACTION_USB_NOT_SUPPORTED: // USB NOT SUPPORTED
+                    Toast.makeText(context, "USB device not supported", Toast.LENGTH_SHORT).show();
                     break;
             }
         }
@@ -70,7 +70,7 @@ public class ConnectBaseActivity extends BaseActivity {
     private final ServiceConnection mUsbConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            mUsbService = ((UsbSerialService.UsbBinder) service).getService();
+            mUsbService = ((UsbService.UsbBinder) service).getService();
             mUsbService.setHandler(mHandler);
         }
 
@@ -84,16 +84,28 @@ public class ConnectBaseActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setUpUsbSerialService();
-        setUpBluetoothService();
+        mHandler = new MyHandler(ConnectBaseActivity.this);
 
+//        sendButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (!editText.getText().toString().equals("")) {
+//                    String data = editText.getText().toString();
+//                    if (usbService != null) { // if UsbService was correctly binded, Send data
+//                        usbService.write(data.getBytes());
+//                    }
+//                }
+//            }
+//        });
+
+        setUpAction();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        setFilters();   // Start listening notifications from UsbSerialService;
-        startUsbService(UsbSerialService.class, mUsbConnection, null);     // Start UsbSerialService(if it was not started before) and Bind it
+        setFilters();  // Start listening notifications from UsbService
+        startService(UsbService.class, mUsbConnection, null); // Start UsbService(if it was not started before) and Bind it
     }
 
     @Override
@@ -103,46 +115,62 @@ public class ConnectBaseActivity extends BaseActivity {
         unbindService(mUsbConnection);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQ_ENABLE_BLUETOOTH:
-                // When the request to enable Bluetooth returns
-                if (resultCode == RESULT_OK) {
-                    // OK:
-                    mBtService.scanDevice();
-                } else {
-                    // CANCEL:
-                    Log.i(LOG_TAG, "Bluetooth is not enabled");
+    private void startService(Class<?> service, ServiceConnection serviceConnection, Bundle extras) {
+        if (!UsbService.SERVICE_CONNECTED) {
+            Intent startService = new Intent(this, service);
+            if (extras != null && !extras.isEmpty()) {
+                Set<String> keys = extras.keySet();
+                for (String key : keys) {
+                    String extra = extras.getString(key);
+                    startService.putExtra(key, extra);
                 }
-                break;
-
-            case REQ_CONNECT_DEVICE:
-                // When DeviceListActivity returns with a device to connect
-                if (resultCode == RESULT_OK) {
-                    // Select Device
-                    mBtService.getDeviceInfo(data);
-                }
-                break;
+            }
+            startService(startService);
         }
-        super.onActivityResult(requestCode, resultCode, data);
+        Intent bindingIntent = new Intent(this, service);
+        bindService(bindingIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
-    private void setUpUsbSerialService() {
+    private void setFilters() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(UsbService.ACTION_USB_PERMISSION_GRANTED);
+        filter.addAction(UsbService.ACTION_NO_USB);
+        filter.addAction(UsbService.ACTION_USB_DISCONNECTED);
+        filter.addAction(UsbService.ACTION_USB_NOT_SUPPORTED);
+        filter.addAction(UsbService.ACTION_USB_PERMISSION_NOT_GRANTED);
+        registerReceiver(mUsbReceiver, filter);
+    }
 
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case UsbSerialService.MESSAGE_FROM_SERIAL_PORT:
-                        String data = (String) msg.obj;
+    private class MyHandler extends Handler {
+        private final WeakReference<Activity> mActivity;
+        private String tempFullText = "AT@CARINFO=2,44,28,20,0,0,234,0,24,45";
+        private String receivedText = "";
+
+        public MyHandler(Activity activity) {
+            mActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case UsbService.MESSAGE_FROM_SERIAL_PORT:
+                    String data = (String) msg.obj;
+
+                    receivedText = receivedText + data;
+                    showToast(receivedText);
+                    Log.i(LOG_TAG, "receivedData: " + data);
+                    Log.i(LOG_TAG, "receivedText: " + receivedText);
+                    if (data.equals("\r") || data.equals(0x0D) || data.equals(13) || data.contains("E")|| receivedText.equals(tempFullText)) {
+                        Log.i("HANDLE", "equals!!");
+                        Toast.makeText(mActivity.get(), "data: " + data, Toast.LENGTH_SHORT);
 
                         mAppService.setCallback(new AppService.ResponseCallback() {
                             @Override
                             public void onRequestNewCommand(String requestCmd) {
-                                byte[] requestData = DataConvertUtils.convertAsciiToBytes(requestCmd);
-                                mUsbService.write(requestData);
-                                mUsbService.write(mAppService.returnOK());
+//                                byte[] requestData = DataConvertUtils.convertAsciiToBytes(requestCmd);
+                                Log.i(LOG_TAG, "requestCmd: " + requestCmd);
+                                mUsbService.write(requestCmd.getBytes());
+                                mUsbService.write(mAppService.returnOK().getBytes());
                             }
 
                             @Override
@@ -159,64 +187,58 @@ public class ConnectBaseActivity extends BaseActivity {
                             }
 
                             @Override
-                            public void returnOK() {
-                                mUsbService.write(mAppService.returnOK());
+                            public void returnOK(AppService.ActionType actionType) {
+                                Log.i("HANDLE", "return ok!!");
+                                mUsbService.write(mAppService.returnOK().getBytes());
+
+                                if (mResultActionListener != null) {
+                                    mResultActionListener.onResultAction(actionType);
+                                }
                             }
                         });
 
-                        mAppService.checkResponseCommand(data);
-                        break;
-                }
+                        mAppService.checkResponseCommand(receivedText);
+                        receivedText = "";
+                    }
+                    break;
+                case UsbService.CTS_CHANGE:
+                    Toast.makeText(mActivity.get(), "CTS_CHANGE", Toast.LENGTH_LONG).show();
+                    break;
+                case UsbService.DSR_CHANGE:
+                    Toast.makeText(mActivity.get(), "DSR_CHANGE", Toast.LENGTH_LONG).show();
+                    break;
             }
-        };
-    }
-
-    private void startUsbService(Class<?> service, ServiceConnection serviceConnection, Bundle extras) {
-        if (!UsbSerialService.SERVICE_CONNECTED) {
-            Intent startUsbService = new Intent(this, service);
-            if (extras != null && !extras.isEmpty()) {
-                Set<String> keys = extras.keySet();
-                for (String key : keys) {
-                    String extra = extras.getString(key);
-                    startUsbService.putExtra(key, extra);
-                }
-            }
-            startService(startUsbService);
         }
-        Intent bindingIntent = new Intent(this, service);
-        bindService(bindingIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
-    private void setFilters() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(UsbSerialService.ACTION_USB_PERMISSION_GRANTED);
-        filter.addAction(UsbSerialService.ACTION_USB_NONE);
-        filter.addAction(UsbSerialService.ACTION_USB_DISCONNECTED);
-        filter.addAction(UsbSerialService.ACTION_USB_NOT_SUPPORTED);
-        filter.addAction(UsbSerialService.ACTION_USB_PERMISSION_NOT_GRANTED);
-        registerReceiver(mUsbReceiver, filter);
-    }
+    private void setUpAction() {
 
-    private void setUpBluetoothService() {
-        mHandler = new Handler() {
+        mAppService.setReqCallback(new AppService.RequestCallback() {
             @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-            }
-        };
-
-        if (mBtService == null) {
-            mBtService = new BluetoothService(this, mHandler);
-        }
-
-        if (mBtService.getDeviceState()) {
-            DialogUtils.showDialog(this, "블루투스 연결을 하시겠습니까?", getString(R.string.title_submit), true, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mBtService.enableBluetooth();
+            public void onRequestNewCommand(String requestCmd) {
+                if (mUsbService != null) {
+                    Log.i(LOG_TAG, "reqNewCmd: " + requestCmd);
+                    mUsbService.write(requestCmd.getBytes());
+//                    mUsbService.write(mAppService.returnOK().getBytes());
                 }
-            });
-        }
+            }
+        });
+    }
 
+    public void sendEvent(int eventCode){
+        AppService appService = new AppService();
+        appService.requestEventCommand(eventCode, null, new AppService.RequestCallback() {
+            @Override
+            public void onRequestNewCommand(String requestCmd) {
+                Log.i(LOG_TAG, "requestCmd: " + requestCmd);
+                mUsbService.write(requestCmd.getBytes());
+            }
+        });
+
+
+    }
+
+    public interface ResultActionListener {
+        void onResultAction(AppService.ActionType actionType);
     }
 }

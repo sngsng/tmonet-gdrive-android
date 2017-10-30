@@ -24,9 +24,8 @@
             android:value="@integer/google_play_services_version"/>
 
         <service
-            android:name=".network.UsbSerialService"
+            android:name=".network.UsbService"
             android:enabled="true">
-
         </service>
 
         <activity android:name=".controller.activity.IntroActivity">
@@ -38,10 +37,6 @@
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
             </intent-filter>
-
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/device_filter"/>
         </activity>
         <activity android:name=".controller.activity.MainActivity">
         </activity>

@@ -16,6 +16,7 @@ import kr.co.tmonet.gdrive.model.CarInfo;
 import kr.co.tmonet.gdrive.model.ChargeStation;
 import kr.co.tmonet.gdrive.model.GlobalInfo;
 import kr.co.tmonet.gdrive.model.UserInfo;
+import kr.co.tmonet.gdrive.network.AppService;
 import kr.co.tmonet.gdrive.utils.ModelUtils;
 
 public class IntroActivity extends TMapBaseActivity {
@@ -23,12 +24,19 @@ public class IntroActivity extends TMapBaseActivity {
     private static final String LOG_TAG = IntroActivity.class.getSimpleName();
 
     private ActivityIntroBinding mBinding;
+    private String tempFullText = "AT@CARINFO=2,44,28,20,0,0,234,0,24,45";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_intro);
         setFinishTransitionStyle(TransitionStyle.None);
+
+        double runnableDistance = ModelUtils.getRunnableDistance(44, 28, 20);
+
+//        AppService appService = new AppService();
+//        appService.checkResponseCommand(tempFullText);
+
 
         checkPermissions(IntroActivity.this, SettingManager.PermissionType.Init, new CheckPermissionListener() {
             @Override
@@ -51,6 +59,13 @@ public class IntroActivity extends TMapBaseActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        updateFooterUsrInfo();
+        updateFooterCarInfo();
+    }
+
     private void loadChargeStationList() {
         ModelManager modelManager = ModelManager.getInstance();
         modelManager.setChargeStationList(ChargeStation.createList());
@@ -58,48 +73,47 @@ public class IntroActivity extends TMapBaseActivity {
 
     private void setUpViews() {
 
-        updateFooterInfo();
+        updateFooterCarInfo();
+        updateFooterUsrInfo();
+
+
+        setResultActionListener(new ResultActionListener() {
+            @Override
+            public void onResultAction(AppService.ActionType actionType) {
+                if (ModelManager.getInstance().getGlobalInfo() != null) {
+                    GlobalInfo globalInfo = ModelManager.getInstance().getGlobalInfo();
+
+                    switch (actionType) {
+                        case CarInfo:
+                            updateFooterCarInfo();
+                            break;
+                        case UsrInfo:
+                            updateFooterUsrInfo();
+                            break;
+                    }
+                }
+            }
+        });
     }
 
-    private void updateFooterInfo() {
+    private void updateFooterCarInfo() {
+        GlobalInfo globalInfo = ModelManager.getInstance().getGlobalInfo();
 
-        // TODO footer 정보 실시간 갱신
+        CarInfo carInfo = globalInfo.getCarInfo();
 
-        if (ModelManager.getInstance().getGlobalInfo() != null) {
-            GlobalInfo globalInfo = ModelManager.getInstance().getGlobalInfo();
-            UserInfo userInfo = globalInfo.getUserInfo();
-            CarInfo carInfo = globalInfo.getCarInfo();
+        if (carInfo != null) {
 
-            if (userInfo != null && carInfo != null) {
+            mBinding.footer.coTextView.setText(String.valueOf(carInfo.getCO()));
+            mBinding.footer.co2TextView.setText(carInfo.getCO2() + "");
+            mBinding.footer.alcoholTextView.setText(carInfo.getVolatility() + "");
+            mBinding.footer.tempHumiTextView.setText(String.format(Locale.KOREA, getString(R.string.title_temp_humi_format), String.valueOf(carInfo.getTemperature()), String.valueOf(carInfo.getHumidity())));
 
-                String remainStr = ModelUtils.getRemainServiceTime(userInfo.getEndAt());
-                if (remainStr != null) {
-                    mBinding.footer.emptyStateLayout.setVisibility(View.VISIBLE);
-                    mBinding.footer.shareingStateLayout.setVisibility(View.GONE);
+            double runnableDistance = ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery());
 
-                    mBinding.footer.remainTimeTextView.setText(remainStr);
-                    mBinding.footer.startDateTextView.setText(ModelUtils.getDateFormat(userInfo.getStartAt()));
-                    mBinding.footer.startTimeTextView.setText(ModelUtils.getTimeFormat(userInfo.getStartAt()));
 
-                    mBinding.footer.endDateTextView.setText(ModelUtils.getDateFormat(userInfo.getEndAt()));
-                    mBinding.footer.endTimeTextView.setText(ModelUtils.getTimeFormat(userInfo.getEndAt()));
+            mBinding.footer.distanceTextView.setText(String.format(Locale.KOREA, getString(R.string.title_distance_format), String.format(Locale.KOREA,"%.0f",runnableDistance)));
 
-                } else {
-                    mBinding.footer.emptyStateLayout.setVisibility(View.VISIBLE);
-                    mBinding.footer.shareingStateLayout.setVisibility(View.GONE);
-                }
-
-                mBinding.footer.coTextView.setText(carInfo.getCO());
-                mBinding.footer.co2TextView.setText(carInfo.getCO2());
-                mBinding.footer.alcoholTextView.setText(carInfo.getVolatility());
-                mBinding.footer.tempHumiTextView.setText(String.format(Locale.KOREA, getString(R.string.title_temp_humi_format), String.valueOf(carInfo.getTemperature()), String.valueOf(carInfo.getHumidity())));
-
-                double runnableDistance = ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery());
-
-                mBinding.footer.distanceTextView.setText(String.format(Locale.KOREA, getString(R.string.title_distance_format), String.valueOf(runnableDistance)));
-            }
-
-//        (연결 1, 충전중 2, 오류 3, 미충전 0)
+            //        (연결 1, 충전중 2, 오류 3, 미충전 0)
             switch (carInfo.getChargeState()) {
                 case 0:     // 미충전
                     mBinding.footer.chargeStateTextView.setText("배터리");
@@ -129,6 +143,35 @@ public class IntroActivity extends TMapBaseActivity {
                     break;
                 default:
                     break;
+            }
+
+        }
+
+
+    }
+
+    private void updateFooterUsrInfo() {
+        GlobalInfo globalInfo = ModelManager.getInstance().getGlobalInfo();
+
+        UserInfo userInfo = globalInfo.getUserInfo();
+
+        if (userInfo != null) {
+
+            String remainStr = ModelUtils.getRemainServiceTime(userInfo.getEndAt());
+            if (remainStr != null) {
+                mBinding.footer.emptyStateLayout.setVisibility(View.VISIBLE);
+                mBinding.footer.shareingStateLayout.setVisibility(View.GONE);
+
+                mBinding.footer.remainTimeTextView.setText(remainStr);
+                mBinding.footer.startDateTextView.setText(ModelUtils.getDateFormat(userInfo.getStartAt()));
+                mBinding.footer.startTimeTextView.setText(ModelUtils.getTimeFormat(userInfo.getStartAt()));
+
+                mBinding.footer.endDateTextView.setText(ModelUtils.getDateFormat(userInfo.getEndAt()));
+                mBinding.footer.endTimeTextView.setText(ModelUtils.getTimeFormat(userInfo.getEndAt()));
+
+            } else {
+                mBinding.footer.emptyStateLayout.setVisibility(View.VISIBLE);
+                mBinding.footer.shareingStateLayout.setVisibility(View.GONE);
             }
         }
     }
