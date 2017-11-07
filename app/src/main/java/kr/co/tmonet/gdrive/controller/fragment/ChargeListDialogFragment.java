@@ -21,11 +21,12 @@ import android.view.WindowManager;
 
 import java.util.ArrayList;
 
-import kr.co.tmonet.gdrive.model.ChargeStation;
-import kr.co.tmonet.gdrive.controller.adapter.ChargeStationAdapter;
-import kr.co.tmonet.gdrive.utils.DialogUtils;
 import kr.co.tmonet.gdrive.R;
+import kr.co.tmonet.gdrive.controller.adapter.ChargeStationAdapter;
 import kr.co.tmonet.gdrive.databinding.FragmentChargeListDialogBinding;
+import kr.co.tmonet.gdrive.manager.ModelManager;
+import kr.co.tmonet.gdrive.model.Charger;
+import kr.co.tmonet.gdrive.utils.DialogUtils;
 
 /**
  * Created by Jessehj on 07/06/2017.
@@ -36,7 +37,7 @@ public class ChargeListDialogFragment extends DialogFragment {
     private static final String ARG_CHARGE_STATION_ITEMS = "argChargeStationItems";
     private static final String ARG_SET_AS_WAY_POINT = "argSetAsWayPoint";
 
-    private ArrayList<ChargeStation> mChargeStations = new ArrayList<>();
+    private ArrayList<Charger> mChargeStations = new ArrayList<>();
     private FragmentChargeListDialogBinding mBinding;
     private ChargeStationAdapter mChargeStationAdapter;
     private OnFragmentInteractionListener mListener;
@@ -45,10 +46,9 @@ public class ChargeListDialogFragment extends DialogFragment {
     public ChargeListDialogFragment() {
     }
 
-    public static ChargeListDialogFragment newInstance(ArrayList<ChargeStation> chargeStations, boolean isWayPoint) {
+    public static ChargeListDialogFragment newInstance(boolean isWayPoint) {
         ChargeListDialogFragment fragment = new ChargeListDialogFragment();
         Bundle args = new Bundle();
-        args.putParcelableArrayList(ARG_CHARGE_STATION_ITEMS, chargeStations);
         args.putBoolean(ARG_SET_AS_WAY_POINT, isWayPoint);
         fragment.setArguments(args);
         return fragment;
@@ -58,9 +58,10 @@ public class ChargeListDialogFragment extends DialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mChargeStations = getArguments().getParcelableArrayList(ARG_CHARGE_STATION_ITEMS);
             mIsWayPoint = getArguments().getBoolean(ARG_SET_AS_WAY_POINT);
         }
+
+        mChargeStations = ModelManager.getInstance().getChargers();
     }
 
     @NonNull
@@ -114,8 +115,6 @@ public class ChargeListDialogFragment extends DialogFragment {
         mListener = null;
     }
 
-
-
     private void setUpViews() {
         mChargeStationAdapter = new ChargeStationAdapter(getActivity());
         mBinding.chargeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -125,7 +124,10 @@ public class ChargeListDialogFragment extends DialogFragment {
         setUpActions();
     }
 
-    private void updateList() {
+    public void updateList() {
+
+        mChargeStations = ModelManager.getInstance().getChargers();
+
         mChargeStationAdapter.setChargeStations(mChargeStations);
         mChargeStationAdapter.notifyDataSetChanged();
     }
@@ -153,7 +155,7 @@ public class ChargeListDialogFragment extends DialogFragment {
         getDialog().setOnKeyListener(new DialogInterface.OnKeyListener() {
             @Override
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                if(keyCode == KeyEvent.KEYCODE_BACK && mListener != null) {
+                if (keyCode == KeyEvent.KEYCODE_BACK && mListener != null) {
                     mListener.onStationDialogCancelClick(mIsWayPoint);
                 }
                 return false;

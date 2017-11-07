@@ -39,9 +39,14 @@ public class ModelUtils {
         return String.format("%.2f", totalDistanceDoubleInKm);
     }
 
-    public static String getExpectedTimeStringFromSeconds(String totalTime) {
+    public static int getExpectedTimeStringInMinute(String totalTime) {
         int seconds = Integer.parseInt(totalTime);
-        int totalExpectedMinute = seconds / 60;
+        int min = seconds / 60;
+
+        return min;
+    }
+    public static String getExpectedTimeStringFromSeconds(String totalMinute) {
+        int totalExpectedMinute = Integer.parseInt(totalMinute);
         if (totalExpectedMinute < 60) {
             return totalExpectedMinute + "분";
         } else {

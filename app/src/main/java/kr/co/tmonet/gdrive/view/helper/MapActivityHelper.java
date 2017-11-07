@@ -52,17 +52,23 @@ public class MapActivityHelper extends ViewHelper implements View.OnClickListene
             mBinding.search.afterSearchLayout.setVisibility(View.VISIBLE);
             mBinding.search.beforeSearchLayout.setVisibility(View.GONE);
             mBinding.search.searchResultTextView.setText(address.getRoadAddress());
-            mBinding.search.leadTimeTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_lead_time_format), address.getLeadTime()));
+            String timeWithFormat = ModelUtils.getExpectedTimeStringFromSeconds(address.getLeadTime());
+            mBinding.search.leadTimeTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_lead_time_format), timeWithFormat));
             mBinding.search.distanceTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_optimum_distance_format), address.getDistance()));
 
             if (ModelManager.getInstance().getGlobalInfo() != null) {
-                double consume = Double.parseDouble(address.getLeadTime()) / ModelManager.getInstance().getGlobalInfo().getCarInfo().getFuelEfficiency();
+
+                double leadTimeInDouble = Double.parseDouble(address.getLeadTime());
+                double consume = leadTimeInDouble / ModelManager.getInstance().getGlobalInfo().getCarInfo().getFuelEfficiency();
                 double consumePercent = consume / ModelManager.getInstance().getGlobalInfo().getCarInfo().getCarBettery() * 100;
                 double remainBatteryPercent = ModelManager.getInstance().getGlobalInfo().getCarInfo().getRemainBettery() - consumePercent;
 
-                mBinding.search.consumeTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_expect_consume_format), String.valueOf(consumePercent), String.valueOf(consume)));
+                String consumePercentStr = String.format("%.2f", consumePercent);
+                String consumeStr = String.format("%.2f", consume);
+                mBinding.search.consumeTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_expect_consume_format), consumePercentStr, consumeStr));
                 if (remainBatteryPercent > 0) {
-                    mBinding.search.batteryTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_remain_battery_format), String.valueOf(remainBatteryPercent)));
+                    String remainBatteryPercentStr = String.format("%.2f", remainBatteryPercent);
+                    mBinding.search.batteryTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_remain_battery_format), remainBatteryPercentStr));
                 } else {
                     mBinding.search.batteryTextView.setText("-");
                 }

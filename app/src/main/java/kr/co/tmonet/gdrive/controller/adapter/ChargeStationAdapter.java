@@ -2,17 +2,17 @@ package kr.co.tmonet.gdrive.controller.adapter;
 
 import android.content.Context;
 import android.databinding.DataBindingUtil;
-import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.databinding.ListItemChargeStationBinding;
-import kr.co.tmonet.gdrive.model.ChargeStation;
+import kr.co.tmonet.gdrive.model.Charger;
 
 /**
  * Created by Jessehj on 07/06/2017.
@@ -23,14 +23,14 @@ public class ChargeStationAdapter extends RecyclerView.Adapter<ChargeStationAdap
     private static final String LOG_TAG = ChargeStationAdapter.class.getSimpleName();
 
     private Context mContext;
-    private ArrayList<ChargeStation> mChargeStations = new ArrayList<>();
+    private ArrayList<Charger> mChargeStations = new ArrayList<>();
     private StationItemClickListener mItemClickListener;
 
     public ChargeStationAdapter(Context context) {
         mContext = context;
     }
 
-    public void setChargeStations(ArrayList<ChargeStation> chargeStations) {
+    public void setChargeStations(ArrayList<Charger> chargeStations) {
         mChargeStations = chargeStations;
     }
 
@@ -45,32 +45,21 @@ public class ChargeStationAdapter extends RecyclerView.Adapter<ChargeStationAdap
     }
 
     @Override
-    public void onBindViewHolder(StationItemViewHolder holder, int position) {
-        ListItemChargeStationBinding holding = holder.mBinding;
+    public void onBindViewHolder(final StationItemViewHolder holder, int position) {
+        final ListItemChargeStationBinding holding = holder.mBinding;
 
-        ChargeStation station = mChargeStations.get(position);
+        Charger station = mChargeStations.get(position);
 
         if (station.getName() != null) {
             holding.stationNameTextView.setText(station.getName());
         }
+
         if (station.getDistance() != null) {
-            holding.stationDistanceTextView.setText(station.getDistance());
+            holding.stationDistanceTextView.setText(String.format(Locale.KOREA, mContext.getString(R.string.title_optimum_distance_format), station.getDistance()));
         }
 
-        if (station.isChargeable()) {
-            holding.chargeableTextView.setText(mContext.getString(R.string.title_o));
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                holding.chargeableTextView.setTextColor(mContext.getResources().getColor(R.color.colorSkyBlue, mContext.getTheme()));
-            } else {
-                holding.chargeableTextView.setTextColor(mContext.getResources().getColor(R.color.colorSkyBlue));
-            }
-        } else {
-            holding.chargeableTextView.setText(mContext.getString(R.string.title_x));
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                holding.chargeableTextView.setTextColor(mContext.getResources().getColor(R.color.colorGrapeFruit, mContext.getTheme()));
-            } else {
-                holding.chargeableTextView.setTextColor(mContext.getResources().getColor(R.color.colorGrapeFruit));
-            }
+        if (!station.getChargeableText(mContext).isEmpty()) {
+            holding.chargeableTextView.setText(station.getChargeableText(mContext));
         }
 
         if (position == getItemCount() - 1) {

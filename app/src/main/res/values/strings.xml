@@ -28,6 +28,10 @@
     <string name="title_distance">거리</string>
     <string name="title_distance_format">%1$skm</string>
     <string name="title_charge_status">충전 가능 여부</string>
+    <string name="title_chargeable">충전 가능</string>
+    <string name="title_charging_other">다른차량 충전중</string>
+    <string name="title_parking_other">다른차량 주차중(충전x)</string>
+    <string name="title_charge_unusable">사용할 수 없음(충전기 고장)</string>
     <string name="title_o">O</string>
     <string name="title_x">X</string>
     <string name="title_search">검색</string>

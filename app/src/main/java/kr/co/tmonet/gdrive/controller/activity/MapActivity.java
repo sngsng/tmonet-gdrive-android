@@ -33,7 +33,7 @@ import kr.co.tmonet.gdrive.databinding.ActivityMapBinding;
 import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.manager.SettingManager;
 import kr.co.tmonet.gdrive.model.CarInfo;
-import kr.co.tmonet.gdrive.model.ChargeStation;
+import kr.co.tmonet.gdrive.model.Charger;
 import kr.co.tmonet.gdrive.model.GlobalInfo;
 import kr.co.tmonet.gdrive.model.SearchAddress;
 import kr.co.tmonet.gdrive.model.TMapViewAttr;
@@ -73,6 +73,9 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
             mSearchAddress = savedInstanceState.getParcelable(KEY_SEARCH_ADDRESS);
         }
 
+//        AppService appService = new AppService(MapActivity.this);
+//        String tempFullText = "AT@CARINFO=2,44,28,20,0,0,234,0,24,45";
+//        appService.checkResponseCommand(tempFullText);
         setScreenSizeFull();
         setUpViews();
     }
@@ -99,7 +102,8 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
 
     @Override
     public void onStationItemClick(int position, final boolean isWayPoint) {
-        final ChargeStation station = mChargeStations.get(position);
+        ArrayList<Charger> chargers = ModelManager.getInstance().getChargers();
+        final Charger station = chargers.get(position);
         checkEnableUseLocation(MapActivity.this, new CheckPermissionListener() {
             @Override
             public void onReady() {
@@ -206,7 +210,7 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
                         mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_60));
                     } else if (carInfo.getRemainBettery() > 20) {
                         mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_40));
-                    } else if (carInfo.getRemainBettery() < 20) {
+                    } else{
                         mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_20));
                     }
                     break;
@@ -435,9 +439,9 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
 
 
     private void setChargeStationMarkerPoint() {
-
-        for (ChargeStation station : mChargeStations) {
-            TMapPoint point = new TMapPoint(station.getLatitude(), station.getLongitude());
+        ArrayList<Charger> chargers = ModelManager.getInstance().getChargers();
+        for (Charger station : chargers) {
+            TMapPoint point = new TMapPoint(station.getLat(), station.getLng());
             TMapMarkerItem item = new TMapMarkerItem();
 
             Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_charge_station_marker);
@@ -449,9 +453,8 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
             item.setVisible(TMapMarkerItem.VISIBLE);
             item.setEnableClustering(true);
 
-            mTMapView.addMarkerItem(station.getId().toString(), item);
-            mMarkerIds.add(station.getId().toString());
-
+            mTMapView.addMarkerItem(station.getName(), item);
+            mMarkerIds.add(station.getName());
         }
     }
 
@@ -531,10 +534,10 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
                         String totalTime = properties.getString(APIConstants.TMap.TOTAL_TIME);
 
                         String distanceInKm = ModelUtils.getExpectedDistanceInKmFromMeter(totalDistance);
-                        String timeWithFormat = ModelUtils.getExpectedTimeStringFromSeconds(totalTime);
+                        int timeInMinute = ModelUtils.getExpectedTimeStringInMinute(totalTime);
 
                         mSearchAddress.setDistance(distanceInKm);
-                        mSearchAddress.setLeadTime(timeWithFormat);
+                        mSearchAddress.setLeadTime(String.valueOf(timeInMinute));
 
                         mActivityHelper.fillSearchReslut(mSearchAddress);
 

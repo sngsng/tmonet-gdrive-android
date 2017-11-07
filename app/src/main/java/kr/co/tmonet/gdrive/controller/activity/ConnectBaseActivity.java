@@ -86,18 +86,6 @@ public class ConnectBaseActivity extends BaseActivity {
 
         mHandler = new MyHandler(ConnectBaseActivity.this);
 
-//        sendButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (!editText.getText().toString().equals("")) {
-//                    String data = editText.getText().toString();
-//                    if (usbService != null) { // if UsbService was correctly binded, Send data
-//                        usbService.write(data.getBytes());
-//                    }
-//                }
-//            }
-//        });
-
         setUpAction();
     }
 
@@ -159,15 +147,13 @@ public class ConnectBaseActivity extends BaseActivity {
                     receivedText = receivedText + data;
                     showToast(receivedText);
                     Log.i(LOG_TAG, "receivedData: " + data);
-                    Log.i(LOG_TAG, "receivedText: " + receivedText);
-                    if (data.equals("\r") || data.equals(0x0D) || data.equals(13) || data.contains("E")|| receivedText.equals(tempFullText)) {
+                    if (data.equals("\\r") || data.equals(0x0D) || data.equals(13) || data.contains("E") || receivedText.equals(tempFullText)) {
                         Log.i("HANDLE", "equals!!");
                         Toast.makeText(mActivity.get(), "data: " + data, Toast.LENGTH_SHORT);
 
                         mAppService.setCallback(new AppService.ResponseCallback() {
                             @Override
                             public void onRequestNewCommand(String requestCmd) {
-//                                byte[] requestData = DataConvertUtils.convertAsciiToBytes(requestCmd);
                                 Log.i(LOG_TAG, "requestCmd: " + requestCmd);
                                 mUsbService.write(requestCmd.getBytes());
                                 mUsbService.write(mAppService.returnOK().getBytes());
@@ -199,6 +185,7 @@ public class ConnectBaseActivity extends BaseActivity {
 
                         mAppService.checkResponseCommand(receivedText);
                         receivedText = "";
+
                     }
                     break;
                 case UsbService.CTS_CHANGE:
@@ -225,9 +212,8 @@ public class ConnectBaseActivity extends BaseActivity {
         });
     }
 
-    public void sendEvent(int eventCode){
-        AppService appService = new AppService();
-        appService.requestEventCommand(eventCode, null, new AppService.RequestCallback() {
+    public void sendEvent(int eventCode) {
+        mAppService.requestEventCommand(eventCode, null, new AppService.RequestCallback() {
             @Override
             public void onRequestNewCommand(String requestCmd) {
                 Log.i(LOG_TAG, "requestCmd: " + requestCmd);

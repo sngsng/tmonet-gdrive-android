@@ -5,6 +5,7 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.view.View;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 import kr.co.tmonet.gdrive.R;
@@ -12,7 +13,7 @@ import kr.co.tmonet.gdrive.controller.fragment.ChargeListDialogFragment;
 import kr.co.tmonet.gdrive.databinding.ActivityMainBinding;
 import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.model.CarInfo;
-import kr.co.tmonet.gdrive.model.ChargeStation;
+import kr.co.tmonet.gdrive.model.Charger;
 import kr.co.tmonet.gdrive.model.GlobalInfo;
 import kr.co.tmonet.gdrive.model.UserInfo;
 import kr.co.tmonet.gdrive.network.AppService;
@@ -22,12 +23,14 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
 
     private ActivityMainBinding mBinding;
 
-    private String tempFullText = "AT@CARINFO=2,44,28,20,0,0,234,0,24,45";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+
+        AppService appService = new AppService(MainActivity.this);
+//        String tempChargerText = "AT@CHARGER=3,0,0,이름1,37.543459,126.951321,0,0,이름2,37.492522,126.948019,0,0,이름3,37.519682,126.887679,0,0\\r";
+//        appService.checkResponseCommand(tempChargerText);
 
         setUpViews();
         setUpActions();
@@ -40,7 +43,8 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
 
     @Override
     public void onStationItemClick(int position, boolean isWayPoint) {
-        final ChargeStation station = mChargeStations.get(position);
+        ArrayList<Charger> chargers = ModelManager.getInstance().getChargers();
+        final Charger station = chargers.get(position);
 
         checkEnableUseLocation(MainActivity.this, new CheckPermissionListener() {
             @Override
@@ -60,6 +64,9 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
         super.onStart();
         updateFooterUsrInfo();
         updateFooterCarInfo();
+
+
+
     }
 
     private void setUpViews() {
@@ -83,6 +90,9 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
                         case UsrInfo:
                             updateFooterUsrInfo();
                             break;
+                        case Charger:
+                            updateChargeStationList();
+                            break;
                     }
                 }
             }
@@ -103,7 +113,7 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
 
             double runnableDistance = ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery());
 
-            mBinding.footer.distanceTextView.setText(String.format(Locale.KOREA, getString(R.string.title_distance_format), String.format(Locale.KOREA,"%.0f",runnableDistance)));
+            mBinding.footer.distanceTextView.setText(String.format(Locale.KOREA, getString(R.string.title_distance_format), String.format(Locale.KOREA, "%.0f", runnableDistance)));
 
             //        (연결 1, 충전중 2, 오류 3, 미충전 0)
             switch (carInfo.getChargeState()) {
@@ -117,7 +127,7 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
                         mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_60));
                     } else if (carInfo.getRemainBettery() > 20) {
                         mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_40));
-                    } else if (carInfo.getRemainBettery() < 20) {
+                    } else {
                         mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_20));
                     }
                     break;
@@ -173,7 +183,6 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
             @Override
             public void onClick(View v) {
                 sendEvent(2);
-
                 showChargeStationListDialog(false);
             }
         });

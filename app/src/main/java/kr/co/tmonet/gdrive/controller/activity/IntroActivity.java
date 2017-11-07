@@ -24,7 +24,7 @@ public class IntroActivity extends TMapBaseActivity {
     private static final String LOG_TAG = IntroActivity.class.getSimpleName();
 
     private ActivityIntroBinding mBinding;
-    private String tempFullText = "AT@CARINFO=2,44,28,20,0,0,234,0,24,45";
+    private String tempFullText = "AT@CARINFO=2,44,28,20,0,0,234,0,24,45\\r";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +34,8 @@ public class IntroActivity extends TMapBaseActivity {
 
         double runnableDistance = ModelUtils.getRunnableDistance(44, 28, 20);
 
-//        AppService appService = new AppService();
-//        appService.checkResponseCommand(tempFullText);
+        AppService appService = new AppService(IntroActivity.this);
+        appService.checkResponseCommand(tempFullText);
 
 
         checkPermissions(IntroActivity.this, SettingManager.PermissionType.Init, new CheckPermissionListener() {
@@ -90,6 +90,7 @@ public class IntroActivity extends TMapBaseActivity {
                         case UsrInfo:
                             updateFooterUsrInfo();
                             break;
+
                     }
                 }
             }
@@ -125,7 +126,7 @@ public class IntroActivity extends TMapBaseActivity {
                         mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_60));
                     } else if (carInfo.getRemainBettery() > 20) {
                         mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_40));
-                    } else if (carInfo.getRemainBettery() < 20) {
+                    } else {
                         mBinding.footer.chargeStateImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_battery_20));
                     }
                     break;

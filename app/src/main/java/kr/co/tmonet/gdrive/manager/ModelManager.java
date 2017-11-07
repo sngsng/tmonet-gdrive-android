@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import kr.co.tmonet.gdrive.model.CarInfo;
 import kr.co.tmonet.gdrive.model.ChargeStation;
+import kr.co.tmonet.gdrive.model.Charger;
 import kr.co.tmonet.gdrive.model.GlobalInfo;
 import kr.co.tmonet.gdrive.model.UserInfo;
 
@@ -21,6 +22,7 @@ public class ModelManager {
     }
 
     private GlobalInfo mGlobalInfo = new GlobalInfo();
+    private ArrayList<Charger> mChargers = new ArrayList<>();
 
     private ArrayList<ChargeStation> mChargeStationList = new ArrayList<>();
 
@@ -49,5 +51,13 @@ public class ModelManager {
             mGlobalInfo.setCarInfo(carInfo);
         }
         setGlobalInfo(mGlobalInfo);
+    }
+
+    public ArrayList<Charger> getChargers() {
+        return mChargers;
+    }
+
+    public void setChargers(ArrayList<Charger> chargers) {
+        mChargers = chargers;
     }
 }

@@ -3,10 +3,12 @@ package kr.co.tmonet.gdrive.network;
 import android.app.Activity;
 import android.util.Log;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -14,9 +16,11 @@ import java.util.Locale;
 import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.manager.SettingManager;
 import kr.co.tmonet.gdrive.model.CarInfo;
-import kr.co.tmonet.gdrive.model.ChargeStation;
+import kr.co.tmonet.gdrive.model.Charger;
+import kr.co.tmonet.gdrive.model.SearchAddress;
 import kr.co.tmonet.gdrive.model.UserInfo;
 import kr.co.tmonet.gdrive.network.APIConstants.Command;
+import kr.co.tmonet.gdrive.utils.ModelUtils;
 
 import static kr.co.tmonet.gdrive.utils.DataConvertUtils.calcCheckSum;
 import static kr.co.tmonet.gdrive.utils.DataConvertUtils.convertAsciiToBytes;
@@ -36,10 +40,8 @@ public class AppService {
 
     public enum ActionType {
         CarInfo,
-        UsrInfo
-    }
-
-    public AppService() {
+        UsrInfo,
+        Charger
     }
 
     public AppService(Activity activity) {
@@ -56,6 +58,8 @@ public class AppService {
 
     public void checkResponseCommand(String cmd) {
         Log.i(LOG_TAG, "cmd : + " + cmd);
+        Log.i(LOG_TAG, "cmd length: " + cmd.length());
+
         if (cmd.contains(Command.SIGN_READ)) {
             // READ ?
             Log.i(LOG_TAG, "read!!!");
@@ -87,9 +91,9 @@ public class AppService {
                 requestCmd = Command.EVENT2 + "," + lat + "," + lng + Command.CR;
                 Log.i(LOG_TAG, "reqCmd: " + requestCmd);
 
-
-                reqCallback.onRequestNewCommand(requestCmd);
-
+                if (mCallback != null) {
+                    reqCallback.onRequestNewCommand(requestCmd);
+                }
 
                 break;
             case 3:     // 현재시간 요청
@@ -162,7 +166,6 @@ public class AppService {
         } else if (responseCmd.contains(Command.CHARGER)) {
 
 
-
         } else if (responseCmd.contains(Command.TIME)) {
             SimpleDateFormat formatter = new SimpleDateFormat("YYYYMMDDhhmmss", Locale.KOREA);
             Date curTime = new Date();
@@ -228,17 +231,76 @@ public class AppService {
 
         } else if (cmd.contains(Command.CHARGER)) {
 
-            // TODO getChargeList( p.8 )
-            String response = cmd.substring(11, cmd.length() - 4);
+            final ArrayList<Charger> chargers = new ArrayList<>();
+
+            String response;
+
+            response = cmd.substring(11, cmd.length() - 2);
+
+            Log.i(LOG_TAG, "responseStr : " + response);
+            double curLatitude = SettingManager.getInstance().getCurrentLatitude();
+            double curLongitude = SettingManager.getInstance().getCurrentLongitude();
+
             if (response.contains(",")) {
-                String[] responseDatas = response.split(",");
-                for (int i = 0; i < responseDatas.length; i++) {
-                    ChargeStation chargeStation = new ChargeStation();
-                    chargeStation.setName(responseDatas[0]);
-                    chargeStation.setLatitude(Double.parseDouble(responseDatas[1]));
-                    chargeStation.setLongitude(Double.parseDouble(responseDatas[2]));
+                final String[] responseDatas = response.split(",");
+                int totalCnt = Integer.parseInt(responseDatas[0]);
+                long curLat = Long.parseLong(responseDatas[1]);
+                long curLng = Long.parseLong(responseDatas[2]);
+
+                for (int i = 0; i < totalCnt; i++) {
+
+                    final double lat = Double.parseDouble(responseDatas[(i * 5) + 4]);
+                    double lng = Double.parseDouble(responseDatas[(i * 5) + 5]);
+
+                    final int finalI = i;
+
+                    SearchAddress.getRouteTimeWithDistance(mActivity, curLatitude, curLongitude, lat, lng, new RestClient.RestListener() {
+                        @Override
+                        public void onBefore() {
+
+                        }
+
+                        @Override
+                        public void onSuccess(Object response) {
+                            if (response instanceof JSONObject) {
+                                JSONObject properties = (JSONObject) response;
+
+                                try {
+                                    String totalDistance = properties.getString(APIConstants.TMap.TOTAL_DISTANCE);
+                                    String distanceInKm = ModelUtils.getExpectedDistanceInKmFromMeter(totalDistance);
+
+                                    Charger charger = new Charger();
+
+                                    charger.setName(responseDatas[(finalI * 5) + 3]);
+                                    charger.setLat(Double.parseDouble(responseDatas[(finalI * 5) + 4]));
+                                    charger.setLng(Double.parseDouble(responseDatas[(finalI * 5) + 5]));
+                                    charger.setChargeable(Integer.parseInt(responseDatas[(finalI * 5) + 6]));
+                                    charger.setOptInfo(Integer.parseInt(responseDatas[(finalI * 5) + 7]));
+                                    charger.setDistance(distanceInKm);
+                                    chargers.add(charger);
+                                    ModelManager.getInstance().setChargers(chargers);
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFail(Error error) {
+
+                        }
+
+                        @Override
+                        public void onError(Error error) {
+
+                        }
+                    });
                 }
             }
+
+
+            mActionType = ActionType.Charger;
 
         } else if (cmd.contains(Command.TIME)) {
             String response = cmd.substring(8, cmd.length() - 4);
@@ -263,16 +325,17 @@ public class AppService {
             CarInfo carInfo = new CarInfo();
 
 
-            String response;
-            if (cmd.contains("\r"))
-                response = cmd.substring(11, cmd.length() - 1);
-            else if (cmd.contains("E")) {
-                int index = cmd.indexOf("E");
-                Log.i(LOG_TAG, "index: " + index);
-                response = cmd.substring(11, cmd.indexOf("E"));
-            } else {
-                response = cmd.substring(11);
-            }
+            String response = cmd.substring(11, cmd.length() - 2);
+
+//            if (cmd.contains("\r"))
+//
+//            else if (cmd.contains("E")) {
+//                int index = cmd.indexOf("E");
+//                Log.i(LOG_TAG, "index: " + index);
+//                response = cmd.substring(11, cmd.indexOf("E"));
+//            } else {
+//                response = cmd.substring(11);
+//            }
 
             Log.i(LOG_TAG, "responseStr : " + response);
 

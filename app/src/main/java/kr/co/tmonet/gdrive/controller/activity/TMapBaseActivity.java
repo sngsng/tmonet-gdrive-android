@@ -20,14 +20,12 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.skp.Tmap.TMapTapi;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.controller.fragment.ChargeListDialogFragment;
-import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.manager.SettingManager;
-import kr.co.tmonet.gdrive.model.ChargeStation;
+import kr.co.tmonet.gdrive.model.Charger;
 import kr.co.tmonet.gdrive.model.SearchAddress;
 import kr.co.tmonet.gdrive.network.APIConstants;
 import kr.co.tmonet.gdrive.utils.DialogUtils;
@@ -44,8 +42,6 @@ public class TMapBaseActivity extends ConnectBaseActivity {
     public static final int REQ_LOCATION_PERMISSION = 0;
 
     public ChargeListDialogFragment mChargeListDialogFragment;
-    public ArrayList<ChargeStation> mChargeStations = ModelManager.getInstance().getChargeStationList();
-
     public LocationChangedListener mLocationChangedListener;
 
     private GoogleApiClient mGoogleApiClient;
@@ -121,15 +117,21 @@ public class TMapBaseActivity extends ConnectBaseActivity {
 
         if (mChargeListDialogFragment == null) {
             if (isWayPoint) {
-                mChargeListDialogFragment = ChargeListDialogFragment.newInstance(mChargeStations, true);
+                mChargeListDialogFragment = ChargeListDialogFragment.newInstance(true);
             } else {
-                mChargeListDialogFragment = ChargeListDialogFragment.newInstance(mChargeStations, false);
+                mChargeListDialogFragment = ChargeListDialogFragment.newInstance(false);
             }
         }
         mChargeListDialogFragment.show(getSupportFragmentManager(), ChargeListDialogFragment.class.getSimpleName());
     }
 
-    public void linkToTMap(ChargeStation station, SearchAddress address) {
+    public void updateChargeStationList() {
+        if (mChargeListDialogFragment != null && mChargeListDialogFragment.isAdded()) {
+            mChargeListDialogFragment.updateList();
+        }
+    }
+
+    public void linkToTMap(Charger station, SearchAddress address) {
         TMapTapi tMapTapi = new TMapTapi(this);
         tMapTapi.setSKPMapAuthentication(getString(R.string.t_map_api_key));
 
@@ -143,8 +145,8 @@ public class TMapBaseActivity extends ConnectBaseActivity {
             pathInfo.put(APIConstants.TMap.R_GO_X, String.valueOf(address.getLongitude()));
 
             pathInfo.put(APIConstants.TMap.R_V1_NAME, station.getName());
-            pathInfo.put(APIConstants.TMap.R_V1_Y, String.valueOf(station.getLatitude()));
-            pathInfo.put(APIConstants.TMap.R_V1_X, String.valueOf(station.getLongitude()));
+            pathInfo.put(APIConstants.TMap.R_V1_Y, String.valueOf(station.getLat()));
+            pathInfo.put(APIConstants.TMap.R_V1_X, String.valueOf(station.getLng()));
 
         } else {
             if (station == null) {
@@ -157,8 +159,8 @@ public class TMapBaseActivity extends ConnectBaseActivity {
                 // 충전소 탐색
                 Log.i(LOG_TAG, "충전소 탐색");
                 pathInfo.put(APIConstants.TMap.R_GO_NAME, station.getName());
-                pathInfo.put(APIConstants.TMap.R_GO_Y, String.valueOf(station.getLatitude()));
-                pathInfo.put(APIConstants.TMap.R_GO_X, String.valueOf(station.getLongitude()));
+                pathInfo.put(APIConstants.TMap.R_GO_Y, String.valueOf(station.getLat()));
+                pathInfo.put(APIConstants.TMap.R_GO_X, String.valueOf(station.getLng()));
             }
         }
 
