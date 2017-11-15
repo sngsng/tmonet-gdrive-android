@@ -121,4 +121,16 @@ public class Charger implements Parcelable {
             return new Charger[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "Charger{" +
+                "mName='" + mName + '\'' +
+                ", mLat=" + mLat +
+                ", mLng=" + mLng +
+                ", mChargeable=" + mChargeable +
+                ", mOptInfo=" + mOptInfo +
+                ", mDistance='" + mDistance + '\'' +
+                '}';
+    }
 }

@@ -44,8 +44,8 @@
     <string name="title_optimum_distance_format">약 %1$skm</string>
     <string name="title_expect_consume">예상소모율 - 예상소모량</string>
     <string name="title_expect_consume_format">약 %1$s%% - %2$skW</string>
-    <string name="title_remain_battery">도착 후 배터리 잔량</string>
-    <string name="title_remain_battery_format">%1$s%%</string>
+    <string name="title_remain_battery">도착 후 배터리 잔량 - 거리</string>
+    <string name="title_remain_battery_format">%1$s%% - %2$skm</string>
     <string name="title_find_path">경로안내</string>
 
     <string name="title_co">CO</string>

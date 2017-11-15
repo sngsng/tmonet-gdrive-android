@@ -24,7 +24,8 @@ public class IntroActivity extends TMapBaseActivity {
     private static final String LOG_TAG = IntroActivity.class.getSimpleName();
 
     private ActivityIntroBinding mBinding;
-    private String tempFullText = "AT@CARINFO=2,44,28,20,0,0,234,0,24,45\\r";
+    private String tempFullText = "AT@CARINFO=2,4.4,22,0,0,0,0,0,0,0";
+//    private String tempFullText = "AT@CARINFO=2,4.4,22,90,0,0,0,0,0,0";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +113,7 @@ public class IntroActivity extends TMapBaseActivity {
             double runnableDistance = ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery());
 
 
-            mBinding.footer.distanceTextView.setText(String.format(Locale.KOREA, getString(R.string.title_distance_format), String.format(Locale.KOREA,"%.0f",runnableDistance)));
+            mBinding.footer.distanceTextView.setText(String.format(Locale.KOREA, getString(R.string.title_distance_format), String.format(Locale.KOREA, "%.0f", runnableDistance)));
 
             //        (연결 1, 충전중 2, 오류 3, 미충전 0)
             switch (carInfo.getChargeState()) {

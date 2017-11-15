@@ -17,6 +17,9 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Set;
@@ -131,8 +134,8 @@ public class ConnectBaseActivity extends BaseActivity {
 
     private class MyHandler extends Handler {
         private final WeakReference<Activity> mActivity;
-        private String tempFullText = "AT@CARINFO=2,44,28,20,0,0,234,0,24,45";
-        private String receivedText = "";
+        private final int CR = 13;
+        ByteArrayOutputStream mOutputStream;
 
         public MyHandler(Activity activity) {
             mActivity = new WeakReference<>(activity);
@@ -142,51 +145,82 @@ public class ConnectBaseActivity extends BaseActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case UsbService.MESSAGE_FROM_SERIAL_PORT:
-                    String data = (String) msg.obj;
 
-                    receivedText = receivedText + data;
-                    showToast(receivedText);
-                    Log.i(LOG_TAG, "receivedData: " + data);
-                    if (data.equals("\\r") || data.equals(0x0D) || data.equals(13) || data.contains("E") || receivedText.equals(tempFullText)) {
-                        Log.i("HANDLE", "equals!!");
-                        Toast.makeText(mActivity.get(), "data: " + data, Toast.LENGTH_SHORT);
+                    if (mOutputStream == null)
+                        mOutputStream = new ByteArrayOutputStream();
 
-                        mAppService.setCallback(new AppService.ResponseCallback() {
-                            @Override
-                            public void onRequestNewCommand(String requestCmd) {
-                                Log.i(LOG_TAG, "requestCmd: " + requestCmd);
-                                mUsbService.write(requestCmd.getBytes());
-                                mUsbService.write(mAppService.returnOK().getBytes());
-                            }
+                    byte[] arg0 = (byte[]) msg.obj;
+                    boolean shouldEnd = false;
 
-                            @Override
-                            public void onPowerOff() {
-                                ActivityCompat.finishAffinity(ConnectBaseActivity.this);
-                                System.runFinalizersOnExit(true);
-                                System.exit(0);
-                            }
+                    for (byte b : arg0) {
 
-                            @Override
-                            public void onSynchronizeTime(Calendar calendar) {
-                                AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-                                am.setTime(calendar.getTimeInMillis());
-                            }
+                        if (b == CR) {
+                            shouldEnd = true;
+                        }
+                    }
 
-                            @Override
-                            public void returnOK(AppService.ActionType actionType) {
-                                Log.i("HANDLE", "return ok!!");
-                                mUsbService.write(mAppService.returnOK().getBytes());
+                    try {
+                        mOutputStream.write(arg0);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
-                                if (mResultActionListener != null) {
-                                    mResultActionListener.onResultAction(actionType);
+                    if (shouldEnd) {
+
+                        byte[] output = mOutputStream.toByteArray();
+
+                        try {
+                            String outputString = new String(output, "UTF-8");
+                            Log.i("Result", outputString);
+                            showToast(outputString);
+
+
+                            mAppService.setResCallback(new AppService.ResponseCallback() {
+                                @Override
+                                public void onRequestNewCommand(String requestCmd) {
+                                    Log.i(LOG_TAG, "requestCmd: " + requestCmd);
+                                    mUsbService.write(requestCmd.getBytes());
+                                    mUsbService.write(mAppService.returnOK().getBytes());
                                 }
-                            }
-                        });
 
-                        mAppService.checkResponseCommand(receivedText);
-                        receivedText = "";
+                                @Override
+                                public void onPowerOff() {
+                                    ActivityCompat.finishAffinity(ConnectBaseActivity.this);
+                                    System.runFinalizersOnExit(true);
+                                    System.exit(0);
+                                }
+
+                                @Override
+                                public void onSynchronizeTime(Calendar calendar) {
+                                    AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+                                    am.setTime(calendar.getTimeInMillis());
+                                }
+
+                                @Override
+                                public void returnOK(AppService.ActionType actionType) {
+                                    Log.i("HANDLE", "return ok!!");
+                                    mUsbService.write(mAppService.returnOK().getBytes());
+
+                                    if (mResultActionListener != null) {
+                                        mResultActionListener.onResultAction(actionType);
+                                    }
+                                }
+                            });
+
+                            mAppService.checkResponseCommand(outputString);
+                            mOutputStream.flush();
+                            mOutputStream = null;
+
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+
+                        } catch (IOException e) {
+
+                            e.printStackTrace();
+                        }
 
                     }
+
                     break;
                 case UsbService.CTS_CHANGE:
                     Toast.makeText(mActivity.get(), "CTS_CHANGE", Toast.LENGTH_LONG).show();
@@ -205,6 +239,7 @@ public class ConnectBaseActivity extends BaseActivity {
             public void onRequestNewCommand(String requestCmd) {
                 if (mUsbService != null) {
                     Log.i(LOG_TAG, "reqNewCmd: " + requestCmd);
+
                     mUsbService.write(requestCmd.getBytes());
 //                    mUsbService.write(mAppService.returnOK().getBytes());
                 }

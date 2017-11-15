@@ -22,10 +22,13 @@ import android.view.WindowManager;
 import java.util.ArrayList;
 
 import kr.co.tmonet.gdrive.R;
+import kr.co.tmonet.gdrive.controller.activity.BaseActivity;
 import kr.co.tmonet.gdrive.controller.adapter.ChargeStationAdapter;
 import kr.co.tmonet.gdrive.databinding.FragmentChargeListDialogBinding;
 import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.model.Charger;
+import kr.co.tmonet.gdrive.model.SearchAddress;
+import kr.co.tmonet.gdrive.network.RestClient;
 import kr.co.tmonet.gdrive.utils.DialogUtils;
 
 /**
@@ -127,9 +130,39 @@ public class ChargeListDialogFragment extends DialogFragment {
     public void updateList() {
 
         mChargeStations = ModelManager.getInstance().getChargers();
-
         mChargeStationAdapter.setChargeStations(mChargeStations);
         mChargeStationAdapter.notifyDataSetChanged();
+
+        if (!mChargeStations.isEmpty()) {
+            SearchAddress.getRouteTimeWithDistance(getActivity(), mChargeStations, new RestClient.RestListener() {
+                @Override
+                public void onBefore() {
+
+                }
+
+                @Override
+                public void onSuccess(Object response) {
+                    mChargeStations = ModelManager.getInstance().getChargers();
+                    mChargeStationAdapter.setChargeStations(mChargeStations);
+                    mChargeStationAdapter.notifyDataSetChanged();
+
+                }
+
+                @Override
+                public void onFail(Error error) {
+                    ((BaseActivity) getActivity()).showSnackbar(error.getLocalizedMessage());
+                }
+
+                @Override
+                public void onError(Error error) {
+                    ((BaseActivity) getActivity()).showSnackbar(error.getLocalizedMessage());
+                }
+            });
+        }
+
+
+
+
     }
 
     private void setUpActions() {

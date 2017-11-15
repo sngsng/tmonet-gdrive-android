@@ -3,7 +3,6 @@ package kr.co.tmonet.gdrive.network;
 import android.app.Activity;
 import android.util.Log;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
@@ -17,10 +16,8 @@ import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.manager.SettingManager;
 import kr.co.tmonet.gdrive.model.CarInfo;
 import kr.co.tmonet.gdrive.model.Charger;
-import kr.co.tmonet.gdrive.model.SearchAddress;
 import kr.co.tmonet.gdrive.model.UserInfo;
 import kr.co.tmonet.gdrive.network.APIConstants.Command;
-import kr.co.tmonet.gdrive.utils.ModelUtils;
 
 import static kr.co.tmonet.gdrive.utils.DataConvertUtils.calcCheckSum;
 import static kr.co.tmonet.gdrive.utils.DataConvertUtils.convertAsciiToBytes;
@@ -34,7 +31,7 @@ public class AppService {
     private static final String LOG_TAG = AppService.class.getSimpleName();
 
     private Activity mActivity;
-    private ResponseCallback mCallback;
+    private ResponseCallback mResCallback;
     private RequestCallback mReqCallback;
     private ActionType mActionType;
 
@@ -48,8 +45,8 @@ public class AppService {
         mActivity = activity;
     }
 
-    public void setCallback(ResponseCallback callback) {
-        mCallback = callback;
+    public void setResCallback(ResponseCallback resCallback) {
+        mResCallback = resCallback;
     }
 
     public void setReqCallback(RequestCallback reqCallback) {
@@ -77,43 +74,47 @@ public class AppService {
     public void requestEventCommand(int eventCode, JSONObject params, RequestCallback reqCallback) {
         Log.i(LOG_TAG, "reqEvent: " + eventCode);
         String requestCmd = "";
+        StringBuilder stringBuilder;
         switch (eventCode) {
             case 1:     // 이용정보 조회
-                requestCmd = Command.EVENT1 + Command.CR;
+                requestCmd = Command.EVENT1;
+                stringBuilder = new StringBuilder(requestCmd).append(Command.CR);
 
-                if (mCallback != null) {
-                    mCallback.onRequestNewCommand(requestCmd);
+                if (mReqCallback != null) {
+                    mReqCallback.onRequestNewCommand(stringBuilder.toString());
                 }
                 break;
             case 2:     // 충전소 조회
                 double lat = SettingManager.getInstance().getCurrentLatitude();
                 double lng = SettingManager.getInstance().getCurrentLongitude();
-                requestCmd = Command.EVENT2 + "," + lat + "," + lng + Command.CR;
+                requestCmd = Command.EVENT2 + "," + lat + "," + lng;
                 Log.i(LOG_TAG, "reqCmd: " + requestCmd);
 
-                if (mCallback != null) {
-                    reqCallback.onRequestNewCommand(requestCmd);
+                stringBuilder = new StringBuilder(requestCmd).append(Command.CR);
+
+                if (mReqCallback != null) {
+                    reqCallback.onRequestNewCommand(stringBuilder.toString());
                 }
 
                 break;
             case 3:     // 현재시간 요청
                 requestCmd = Command.EVENT3 + Command.CR;
-                if (mCallback != null) {
-                    mCallback.onRequestNewCommand(requestCmd);
+                if (mReqCallback != null) {
+                    mReqCallback.onRequestNewCommand(requestCmd);
                 }
 
                 break;
             case 4:     // GPS 좌표 조회
                 requestCmd = Command.EVENT4 + Command.CR;
 
-                if (mCallback != null) {
-                    mCallback.onRequestNewCommand(requestCmd);
+                if (mReqCallback != null) {
+                    mReqCallback.onRequestNewCommand(requestCmd);
                 }
                 break;
             case 5:     // 차량정보 요청
                 requestCmd = Command.EVENT5 + Command.CR;
-                if (mCallback != null) {
-                    mCallback.onRequestNewCommand(requestCmd);
+                if (mReqCallback != null) {
+                    mReqCallback.onRequestNewCommand(requestCmd);
                 }
                 break;
             default:
@@ -135,8 +136,8 @@ public class AppService {
                 break;
         }
 
-        if (mCallback != null) {
-            mCallback.onRequestNewCommand(requestCmd);
+        if (mResCallback != null) {
+            mResCallback.onRequestNewCommand(requestCmd);
         }
     }
 
@@ -153,14 +154,14 @@ public class AppService {
 
             requestCmd += Command.SIGN_CHECKSUM_START + calcCheckSum(requestCmd) + Command.CR;
 
-            if (mCallback != null) {
-                mCallback.onRequestNewCommand(requestCmd);
+            if (mResCallback != null) {
+                mResCallback.onRequestNewCommand(requestCmd);
             }
 
         } else if (responseCmd.contains(Command.PWOFF)) {
 
-            if (mCallback != null) {
-                mCallback.onPowerOff();
+            if (mResCallback != null) {
+                mResCallback.onPowerOff();
             }
 
         } else if (responseCmd.contains(Command.CHARGER)) {
@@ -175,8 +176,8 @@ public class AppService {
             requestCmd += calcCheckSum(requestCmd) + Command.CR;
 
 
-            if (mCallback != null) {
-                mCallback.onRequestNewCommand(requestCmd);
+            if (mResCallback != null) {
+                mResCallback.onRequestNewCommand(requestCmd);
             }
 
         } else if (responseCmd.contains(Command.GPS)) {
@@ -184,12 +185,13 @@ public class AppService {
             double lat = SettingManager.getInstance().getCurrentLatitude();
             double lng = SettingManager.getInstance().getCurrentLongitude();
 
-            requestCmd = Command.GPS_READ + lat + "," + lng + Command.CR;
+            requestCmd = Command.GPS_READ + lat + "," + lng;
 //            requestCmd += calcCheckSum(requestCmd) + Command.CR;
             Log.i(LOG_TAG, "requestCmd(GPS) : " + requestCmd);
+            StringBuilder stringBuilder = new StringBuilder(requestCmd).append(Command.CR);
 
-            if (mCallback != null) {
-                mCallback.onRequestNewCommand(requestCmd);
+            if (mResCallback != null) {
+                mResCallback.onRequestNewCommand(stringBuilder.toString());
             }
 
         } else if (responseCmd.contains(Command.CARINFO)) {
@@ -235,7 +237,7 @@ public class AppService {
 
             String response;
 
-            response = cmd.substring(11, cmd.length() - 2);
+            response = cmd.substring(cmd.indexOf(Command.SIGN_WRITE) + 1);
 
             Log.i(LOG_TAG, "responseStr : " + response);
             double curLatitude = SettingManager.getInstance().getCurrentLatitude();
@@ -244,62 +246,30 @@ public class AppService {
             if (response.contains(",")) {
                 final String[] responseDatas = response.split(",");
                 int totalCnt = Integer.parseInt(responseDatas[0]);
-                long curLat = Long.parseLong(responseDatas[1]);
-                long curLng = Long.parseLong(responseDatas[2]);
 
                 for (int i = 0; i < totalCnt; i++) {
 
-                    final double lat = Double.parseDouble(responseDatas[(i * 5) + 4]);
-                    double lng = Double.parseDouble(responseDatas[(i * 5) + 5]);
+                    try {
 
-                    final int finalI = i;
+                        Charger charger = new Charger();
 
-                    SearchAddress.getRouteTimeWithDistance(mActivity, curLatitude, curLongitude, lat, lng, new RestClient.RestListener() {
-                        @Override
-                        public void onBefore() {
+                        String name = responseDatas[(i * 5) + 3].trim();
+                        charger.setName(name);
+                        charger.setLat(Double.parseDouble(responseDatas[(i * 5) + 4].trim()));
+                        charger.setLng(Double.parseDouble(responseDatas[(i * 5) + 5].trim()));
+                        charger.setChargeable(Integer.parseInt(responseDatas[(i * 5) + 6]));
+                        charger.setOptInfo(Integer.parseInt(responseDatas[(i * 5) + 7]));
+                        chargers.add(charger);
 
-                        }
+                        Log.i(LOG_TAG, "charger: " + charger.toString());
+                        ModelManager.getInstance().setChargers(chargers);
 
-                        @Override
-                        public void onSuccess(Object response) {
-                            if (response instanceof JSONObject) {
-                                JSONObject properties = (JSONObject) response;
+                    } catch (Exception e) {
 
-                                try {
-                                    String totalDistance = properties.getString(APIConstants.TMap.TOTAL_DISTANCE);
-                                    String distanceInKm = ModelUtils.getExpectedDistanceInKmFromMeter(totalDistance);
-
-                                    Charger charger = new Charger();
-
-                                    charger.setName(responseDatas[(finalI * 5) + 3]);
-                                    charger.setLat(Double.parseDouble(responseDatas[(finalI * 5) + 4]));
-                                    charger.setLng(Double.parseDouble(responseDatas[(finalI * 5) + 5]));
-                                    charger.setChargeable(Integer.parseInt(responseDatas[(finalI * 5) + 6]));
-                                    charger.setOptInfo(Integer.parseInt(responseDatas[(finalI * 5) + 7]));
-                                    charger.setDistance(distanceInKm);
-                                    chargers.add(charger);
-                                    ModelManager.getInstance().setChargers(chargers);
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onFail(Error error) {
-
-                        }
-
-                        @Override
-                        public void onError(Error error) {
-
-                        }
-                    });
+                        e.printStackTrace();
+                    }
                 }
             }
-
-
             mActionType = ActionType.Charger;
 
         } else if (cmd.contains(Command.TIME)) {
@@ -314,8 +284,8 @@ public class AppService {
             Calendar calendar = Calendar.getInstance();
             calendar.set(year, month - 1, date, hour, min, sec);
 
-            if (mCallback != null) {
-                mCallback.onSynchronizeTime(calendar);
+            if (mResCallback != null) {
+                mResCallback.onSynchronizeTime(calendar);
             }
 
         } else if (cmd.contains(Command.GPS)) {
@@ -325,7 +295,7 @@ public class AppService {
             CarInfo carInfo = new CarInfo();
 
 
-            String response = cmd.substring(11, cmd.length() - 2);
+            String response = cmd.substring(cmd.indexOf(Command.SIGN_WRITE) + 1);
 
 //            if (cmd.contains("\r"))
 //
@@ -342,25 +312,30 @@ public class AppService {
 
             if (response.contains(",")) {
                 String[] responseDatas = response.split(",");
-                carInfo.setCarType(Integer.parseInt(responseDatas[0]));
-                carInfo.setFuelEfficiency(Integer.parseInt(responseDatas[1]));
-                carInfo.setCarBettery(Double.parseDouble(responseDatas[2]));
-                carInfo.setRemainBettery(Double.parseDouble(responseDatas[3]));
-                carInfo.setChargeState(Integer.parseInt(responseDatas[4]));
-                carInfo.setCO(Integer.parseInt(responseDatas[5]));
-                carInfo.setCO2(Integer.parseInt(responseDatas[6]));
-                carInfo.setVolatility(Integer.parseInt(responseDatas[7]));
-                carInfo.setTemperature(Double.parseDouble(responseDatas[8]));
-                carInfo.setHumidity(Double.parseDouble(responseDatas[9]));
+
+                try {
+                    carInfo.setCarType(Integer.parseInt(responseDatas[0]));
+                    carInfo.setFuelEfficiency(Double.parseDouble(responseDatas[1]));
+                    carInfo.setCarBettery(Double.parseDouble(responseDatas[2]));
+                    carInfo.setRemainBettery(Double.parseDouble(responseDatas[3]));
+                    carInfo.setChargeState(Integer.parseInt(responseDatas[4]));
+                    carInfo.setCO(Integer.parseInt(responseDatas[5]));
+                    carInfo.setCO2(Integer.parseInt(responseDatas[6]));
+                    carInfo.setVolatility(Integer.parseInt(responseDatas[7]));
+                    carInfo.setTemperature(Double.parseDouble(responseDatas[8]));
+                    carInfo.setHumidity(Double.parseDouble(responseDatas[9]));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             ModelManager.getInstance().updateGlobalInfo(carInfo);
             mActionType = ActionType.CarInfo;
         }
 
-        if (mCallback != null) {
+        if (mResCallback != null) {
             Log.i(LOG_TAG, "returnok " + mActionType);
-            mCallback.returnOK(mActionType);
+            mResCallback.returnOK(mActionType);
         }
     }
 
@@ -369,7 +344,8 @@ public class AppService {
     }
 
     public String returnOK() {
-        return (Command.OK + Command.CR);
+        StringBuilder stringBuilder = new StringBuilder(Command.OK).append(Command.CR);
+        return stringBuilder.toString();
 //        return convertAsciiToBytes(Command.OK + Command.CR);
     }
 

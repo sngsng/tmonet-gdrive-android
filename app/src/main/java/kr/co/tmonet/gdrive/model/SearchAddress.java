@@ -3,6 +3,7 @@ package kr.co.tmonet.gdrive.model;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -11,7 +12,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+
 import kr.co.tmonet.gdrive.R;
+import kr.co.tmonet.gdrive.manager.SettingManager;
 import kr.co.tmonet.gdrive.network.APIConstants;
 import kr.co.tmonet.gdrive.network.RestClient;
 import kr.co.tmonet.gdrive.utils.ModelUtils;
@@ -230,6 +235,86 @@ public class SearchAddress implements Parcelable {
             }
         });
     }
+
+    public static void getRouteTimeWithDistance(final Context context, ArrayList<Charger> chargers, final RestClient.RestListener listener) {
+        listener.onBefore();
+
+        double startLat = SettingManager.getInstance().getCurrentLatitude();
+        double startLng = SettingManager.getInstance().getCurrentLongitude();
+
+        int NUM_OF_REQUEST = chargers.size();
+
+        final CountDownLatch countDownLatch = new CountDownLatch(NUM_OF_REQUEST);
+
+        final ArrayList<Error> errors = new ArrayList<>();
+        final ArrayList<Error> fails = new ArrayList<>();
+
+        for(final Charger charger: chargers) {
+            getRouteTimeWithDistance(context, startLat, startLng, charger.getLat(), charger.getLng(), new RestClient.RestListener() {
+                @Override
+                public void onBefore() {
+
+                }
+
+                @Override
+                public void onSuccess(Object response) {
+
+                    if (response instanceof JSONObject) {
+                        JSONObject properties = (JSONObject) response;
+
+                        try {
+                            String totalDistance = properties.getString(APIConstants.TMap.TOTAL_DISTANCE);
+                            String distanceInKm = ModelUtils.getExpectedDistanceInKmFromMeter(totalDistance);
+
+                            charger.setDistance(distanceInKm);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    countDownLatch.countDown();
+                }
+
+                @Override
+                public void onFail(Error error) {
+                    fails.add(error);
+                    countDownLatch.countDown();
+                }
+
+                @Override
+                public void onError(Error error) {
+                    errors.add(error);
+                    countDownLatch.countDown();
+                }
+            });
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        countDownLatch.await();
+                        ((AppCompatActivity) context).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!errors.isEmpty()) {
+                                    listener.onError(errors.get(0));
+                                } else if (!fails.isEmpty()) {
+                                    listener.onFail(fails.get(0));
+                                } else {
+                                    listener.onSuccess(null);
+                                }
+                            }
+                        });
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        }
+    }
+
+
 
     //passList=126.98506595175428,37.56674182109044,334857,16
     public static void getRouteTimeWithDistance(Context context, double startLat, double startLng, double endLat, double endLng, final RestClient.RestListener listener) {

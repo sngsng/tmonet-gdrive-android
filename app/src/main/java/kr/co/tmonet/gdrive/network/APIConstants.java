@@ -84,7 +84,7 @@ public class APIConstants {
     }
 
     public static class Command {
-        public static final String CR = "\\r";
+        public static final String CR = "\r";
         public static final String AT = "AT";
         public static final String SIGN_AT = "@";
         public static final String SIGN_READ = "?";

@@ -11,6 +11,7 @@ import kr.co.tmonet.gdrive.R;
 import kr.co.tmonet.gdrive.databinding.ActivityMapBinding;
 import kr.co.tmonet.gdrive.manager.ModelManager;
 import kr.co.tmonet.gdrive.model.CarInfo;
+import kr.co.tmonet.gdrive.model.GlobalInfo;
 import kr.co.tmonet.gdrive.model.SearchAddress;
 import kr.co.tmonet.gdrive.utils.ModelUtils;
 
@@ -57,31 +58,40 @@ public class MapActivityHelper extends ViewHelper implements View.OnClickListene
             mBinding.search.distanceTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_optimum_distance_format), address.getDistance()));
 
             if (ModelManager.getInstance().getGlobalInfo() != null) {
+                GlobalInfo globalInfo = ModelManager.getInstance().getGlobalInfo();
 
-                double leadTimeInDouble = Double.parseDouble(address.getLeadTime());
-                double consume = leadTimeInDouble / ModelManager.getInstance().getGlobalInfo().getCarInfo().getFuelEfficiency();
-                double consumePercent = consume / ModelManager.getInstance().getGlobalInfo().getCarInfo().getCarBettery() * 100;
-                double remainBatteryPercent = ModelManager.getInstance().getGlobalInfo().getCarInfo().getRemainBettery() - consumePercent;
+                if (globalInfo.getCarInfo() != null) {
+                    CarInfo carInfo = globalInfo.getCarInfo();
 
-                String consumePercentStr = String.format("%.2f", consumePercent);
-                String consumeStr = String.format("%.2f", consume);
-                mBinding.search.consumeTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_expect_consume_format), consumePercentStr, consumeStr));
-                if (remainBatteryPercent > 0) {
-                    String remainBatteryPercentStr = String.format("%.2f", remainBatteryPercent);
-                    mBinding.search.batteryTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_remain_battery_format), remainBatteryPercentStr));
-                } else {
-                    mBinding.search.batteryTextView.setText("-");
-                }
+                    double leadTimeInDouble = Double.parseDouble(address.getLeadTime());
+                    double consume = leadTimeInDouble / ModelManager.getInstance().getGlobalInfo().getCarInfo().getFuelEfficiency();
+                    double consumePercent = consume / ModelManager.getInstance().getGlobalInfo().getCarInfo().getCarBettery() * 100;
+                    double remainBatteryPercent = ModelManager.getInstance().getGlobalInfo().getCarInfo().getRemainBettery() - consumePercent;
 
-                CarInfo carInfo = ModelManager.getInstance().getGlobalInfo().getCarInfo();
-                if (carInfo != null) {
-                    double runnableDistance = ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery());
+                    String consumePercentStr = String.format("%.2f", consumePercent);
+                    String consumeStr = String.format("%.2f", consume);
+                    mBinding.search.consumeTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_expect_consume_format), consumePercentStr, consumeStr));
+                    if (remainBatteryPercent > 0) {
+                        String remainBatteryPercentStr = String.format("%.2f", remainBatteryPercent);
 
-                    if (runnableDistance + 20.0 < Double.parseDouble(address.getDistance())) {
-                        mIsRunnable = false;
+                        double runnableDistanceByRemainBattery = ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), remainBatteryPercent);
+                        String runnableDistanceByRemainBatteryStr = String.format("%.2f", runnableDistanceByRemainBattery);
+
+                        mBinding.search.batteryTextView.setText(String.format(Locale.KOREA, mActivity.getString(R.string.title_remain_battery_format), remainBatteryPercentStr, runnableDistanceByRemainBatteryStr));
                     } else {
-                        mIsRunnable = true;
+                        mBinding.search.batteryTextView.setText("-");
                     }
+
+                    if (carInfo != null) {
+                        double runnableDistance = ModelUtils.getRunnableDistance(carInfo.getFuelEfficiency(), carInfo.getCarBettery(), carInfo.getRemainBettery());
+
+                        if (runnableDistance + 20.0 < Double.parseDouble(address.getDistance())) {
+                            mIsRunnable = false;
+                        } else {
+                            mIsRunnable = true;
+                        }
+                    }
+
                 }
             }
         }

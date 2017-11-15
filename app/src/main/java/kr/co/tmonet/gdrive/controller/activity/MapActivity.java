@@ -341,6 +341,9 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
                         case UsrInfo:
                             updateFooterUsrInfo();
                             break;
+                        case Charger:
+                            updateChargeStationList();
+                            break;
                     }
                 }
             }

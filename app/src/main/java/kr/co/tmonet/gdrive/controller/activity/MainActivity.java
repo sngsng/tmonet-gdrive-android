@@ -29,7 +29,7 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         AppService appService = new AppService(MainActivity.this);
-//        String tempChargerText = "AT@CHARGER=3,0,0,이름1,37.543459,126.951321,0,0,이름2,37.492522,126.948019,0,0,이름3,37.519682,126.887679,0,0\\r";
+//        String tempChargerText = "AT@CHARGER=3,0,0,이름1,37.543459,126.951321,0,0,이름2,37.492522,126.948019,0,0,이름3,37.519682,126.887679,0,0\\r";[
 //        appService.checkResponseCommand(tempChargerText);
 
         setUpViews();
@@ -64,7 +64,6 @@ public class MainActivity extends TMapBaseActivity implements ChargeListDialogFr
         super.onStart();
         updateFooterUsrInfo();
         updateFooterCarInfo();
-
 
 
     }
