@@ -568,7 +568,7 @@ public class MapActivity extends TMapBaseActivity implements AlertDialogFragment
 
     private void showAddWayPointDialog() {
         if (mAlertDialogFragment == null) {
-            mAlertDialogFragment = AlertDialogFragment.newInstance(mSearchAddress.getDistance(), mBinding.search.distanceTextView.getText().toString());
+            mAlertDialogFragment = AlertDialogFragment.newInstance(mSearchAddress.getDistance(), mBinding.footer.distanceTextView.getText().toString());
         }
         mAlertDialogFragment.show(getSupportFragmentManager(), AlertDialogFragment.class.getSimpleName());
     }
